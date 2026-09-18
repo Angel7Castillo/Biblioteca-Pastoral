@@ -1,8 +1,26 @@
-# React + Vite
+# 📖 Biblioteca Pastoral v2
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Software multiplataforma (**PC Desktop** y **Android**) diseñado para pastores, líderes y maestros bíblicos, con la interfaz y estética de **Antigravity IDE**.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🏗️ Estructura del Proyecto
+
+- **`/backend`**: API REST centralizada en **Laravel 11 (PHP 8.3 + SQLite)**.
+- **`/desktop`**: Cliente de escritorio en **Electron + React + Vite + TailwindCSS 4**.
+- **`/mobile`**: Cliente móvil para **Android** (Capacitor).
+- **`/docs`**: [Documentación del Sistema e Infraestructura](docs/Arquitectura.md).
+
+---
+
+## 🖥️ Servidor Proxmox Backend (LXC 114)
+
+- **Nombre**: `BP-Angel`
+- **IP**: `192.168.1.200`
+- **Recursos**: 4 Cores / 4 GB RAM / 40 GB Disco
+- **Servicios**: Nginx + PHP 8.5-FPM + SQLite
+
+---
+
+## 📝 Documentación
+Consulte el archivo [`docs/Arquitectura.md`](docs/Arquitectura.md) para ver la guía completa de configuración, credenciales y comandos de despliegue.
