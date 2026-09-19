@@ -13,13 +13,13 @@ class SystemController extends Controller
         $baseDir = base_path('..');
         $backendDir = base_path();
 
-        // Configurar safe directory y ejecutar git fetch + reset + artisan migrate
-        $command = "cd {$baseDir} && git config --global --add safe.directory {$baseDir} 2>&1 && git fetch origin 2>&1 && git reset --hard origin/main 2>&1 && cd {$backendDir} && php artisan route:clear 2>&1 && php artisan config:clear 2>&1 && php artisan migrate --force 2>&1";
+        // Ejecutar git fetch + reset + artisan migrate usando git -C directamente
+        $command = "git -C {$baseDir} fetch origin 2>&1 && git -C {$baseDir} reset --hard origin/main 2>&1 && cd {$backendDir} && php artisan route:clear 2>&1 && php artisan config:clear 2>&1 && php artisan migrate --force 2>&1";
 
         $output = shell_exec($command);
 
         // Obtener último commit
-        $commitInfo = shell_exec("cd {$baseDir} && git log -1 --pretty=format:\"%h - %s (%cr)\" 2>&1");
+        $commitInfo = shell_exec("git -C {$baseDir} log -1 --pretty=format:\"%h - %s (%cr)\" 2>&1");
 
         return response()->json([
             'success' => true,
@@ -32,7 +32,7 @@ class SystemController extends Controller
     public function status(Request $request)
     {
         $baseDir = base_path('..');
-        $commitInfo = shell_exec("cd {$baseDir} && git log -1 --pretty=format:\"%h - %s (%cr)\" 2>&1");
+        $commitInfo = shell_exec("git -C {$baseDir} log -1 --pretty=format:\"%h - %s (%cr)\" 2>&1");
 
         return response()->json([
             'success' => true,
