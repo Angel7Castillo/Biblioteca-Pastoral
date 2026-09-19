@@ -174,29 +174,33 @@ body {
 
   .print-header {
     border-bottom: 2px solid #1e3a8a;
-    padding-bottom: 12px;
+    padding-bottom: 14px;
     margin-bottom: 20px;
   }
 
   .print-header h1 {
-    font-size: 24pt;
+    font-size: 22pt;
     font-weight: bold;
     color: #1e3a8a;
-    margin: 0 0 8px 0;
+    margin: 0 0 10px 0;
     line-height: 1.2;
   }
 
-  .print-header-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    font-size: 11pt;
-    font-family: 'Inter', sans-serif;
-    color: #374151;
+  .print-header-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px 16px;
+    font-size: 9.5pt;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #4b5563;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 10px 14px;
+    border-radius: 6px;
   }
 
-  .print-header-meta strong {
-    color: #111827;
+  .print-header-grid strong {
+    color: #0f172a;
   }
 
   .print-body {
