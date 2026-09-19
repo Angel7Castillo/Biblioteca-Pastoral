@@ -135,7 +135,7 @@ body {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 18mm 15mm 18mm 15mm;
+    margin: 0;
   }
 
   /* Ocultar elementos de UI del IDE durante la impresión */
@@ -173,7 +173,8 @@ body {
   .print-container {
     width: 100% !important;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 15mm !important;
+    box-sizing: border-box !important;
     background: #ffffff !important;
     color: #000000 !important;
     font-family: 'Georgia', 'Times New Roman', serif;
