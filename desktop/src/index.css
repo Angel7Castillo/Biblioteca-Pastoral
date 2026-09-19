@@ -186,12 +186,28 @@ body {
     margin-bottom: 12px;
   }
 
+  .print-header-top {
+    display: flex !important;
+    align-items: baseline !important;
+    justify-content: space-between !important;
+    margin-bottom: 4px !important;
+  }
+
   .print-header h1 {
     font-size: 16pt;
     font-weight: bold;
     color: #1e3a8a;
-    margin: 0 0 4px 0;
+    margin: 0;
     line-height: 1.15;
+  }
+
+  .print-brand-tag {
+    font-size: 9pt;
+    font-weight: 800;
+    color: #1e3a8a;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 
   .print-header-compact {

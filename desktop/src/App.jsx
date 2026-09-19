@@ -968,7 +968,10 @@ export default function App() {
       {activeSermon && (
         <div className="print-only print-container">
           <div className="print-header">
-            <h1>{sermonTitle || 'Sermón sin título'}</h1>
+            <div className="print-header-top">
+              <h1>{sermonTitle || 'Sermón sin título'}</h1>
+              <span className="print-brand-tag">BIBLIOTECA PASTORAL</span>
+            </div>
             <div className="print-header-compact">
               {sermonPassage && <span><strong>📖 Pasaje:</strong> {sermonPassage}</span>}
               {sermonLocation && <span><strong>🏷️ Tema:</strong> {sermonLocation}</span>}
