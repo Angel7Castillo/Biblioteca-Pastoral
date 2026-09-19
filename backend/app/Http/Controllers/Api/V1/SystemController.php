@@ -14,7 +14,7 @@ class SystemController extends Controller
         $backendDir = base_path();
 
         // Establecer HOME=/tmp para permitir escritura de config en www-data
-        $command = "export HOME=/tmp; git -C {$baseDir} config --add safe.directory {$baseDir} 2>&1 && git -C {$baseDir} fetch origin 2>&1 && git -C {$baseDir} reset --hard origin/main 2>&1 && cd {$backendDir} && php artisan route:clear 2>&1 && php artisan config:clear 2>&1 && php artisan migrate --force 2>&1";
+        $command = "export HOME=/tmp; git -C {$baseDir} config --add safe.directory {$baseDir} 2>&1 && git -C {$baseDir} fetch origin 2>&1 && git -C {$baseDir} reset --hard origin/main 2>&1 && cd {$backendDir} && php artisan route:clear 2>&1 && php artisan config:clear 2>&1 && php artisan migrate --force 2>&1 && php artisan db:seed --class=BibleSeeder --force 2>&1";
 
         $output = shell_exec($command);
 
