@@ -297,8 +297,9 @@ export default function App() {
     const q = sermonSearchQuery.toLowerCase().trim();
     const matchTitle = (s.title || '').toLowerCase().includes(q);
     const matchPassage = (s.main_passage || '').toLowerCase().includes(q);
+    const matchTopic = (s.location || '').toLowerCase().includes(q);
     const matchContent = (s.content_markdown || s.content_html || '').toLowerCase().includes(q);
-    return matchTitle || matchPassage || matchContent;
+    return matchTitle || matchPassage || matchTopic || matchContent;
   });
 
   const quillModules = {
@@ -403,7 +404,7 @@ export default function App() {
               <Search size={13} className="absolute left-2.5 top-2.5 opacity-50" />
               <input 
                 type="text"
-                placeholder="Buscar por título o versículo..."
+                placeholder="Buscar por título, verso o tema..."
                 value={sermonSearchQuery}
                 onChange={(e) => setSermonSearchQuery(e.target.value)}
                 className={`w-full border rounded pl-8 pr-6 py-1.5 text-xs focus:outline-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white placeholder-gray-500' : 'bg-white border-[#D5D1C6] text-gray-900 placeholder-gray-400'}`}
