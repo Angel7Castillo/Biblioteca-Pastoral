@@ -361,7 +361,7 @@ export default function App() {
       )}
 
       {/* Top IDE Window Bar */}
-      <div className={`h-10 border-b flex items-center px-4 justify-between text-xs font-semibold select-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-[#EFECE6] border-[#D5D1C6] text-gray-900'}`}>
+      <div className={`h-10 border-b no-print flex items-center px-4 justify-between text-xs font-semibold select-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-[#EFECE6] border-[#D5D1C6] text-gray-900'}`}>
         
         {/* Left Side Header: Sermon Panel Toggle + Brand Title */}
         <div className="flex items-center space-x-3">
@@ -437,7 +437,7 @@ export default function App() {
       </div>
 
       {/* Main Workspace Layout */}
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 overflow-hidden relative no-print">
 
         {/* Pestaña flotante lateral cuando el panel de sermones está oculto */}
         {!showSermonPanel && (
@@ -969,7 +969,15 @@ export default function App() {
           </div>
           <div 
             className="print-body"
-            dangerouslySetInnerHTML={{ __html: sermonHtml }}
+            dangerouslySetInnerHTML={{ 
+              __html: sermonHtml ? sermonHtml.replace(/^\s*<h1[^>]*>(.*?)<\/h1>/i, (match, p1) => {
+                const textContent = p1.replace(/<[^>]*>/g, '').trim();
+                if (!sermonTitle || textContent.toLowerCase() === sermonTitle.trim().toLowerCase()) {
+                  return '';
+                }
+                return match;
+              }) : ''
+            }}
           />
         </div>
       )}

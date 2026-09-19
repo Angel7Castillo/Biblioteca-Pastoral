@@ -7,7 +7,7 @@ export default function StatusBar({ wordCount = 0, isOffline = false, activeSerm
   const estimatedMinutes = Math.ceil(wordCount / 130);
 
   return (
-    <div className="h-7 bg-[#151720] border-t border-[#2A2E3E] text-[11px] text-[#A6ACCD] flex items-center px-4 justify-between select-none z-10 relative">
+    <div className="h-7 no-print bg-[#151720] border-t border-[#2A2E3E] text-[11px] text-[#A6ACCD] flex items-center px-4 justify-between select-none z-10 relative">
       
       {/* Left Status: Active file & save status */}
       <div className="flex items-center gap-4">

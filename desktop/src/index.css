@@ -141,6 +141,7 @@ body {
   /* Ocultar elementos de UI del IDE durante la impresión */
   .no-print,
   .ql-toolbar,
+  .app-container > *:not(.print-only),
   header,
   nav,
   aside,
@@ -156,11 +157,17 @@ body {
     color: #000000 !important;
     height: auto !important;
     overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   /* Mostrar exclusivamente el contenedor de impresión */
   .print-only {
     display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
   }
 
   .print-container {
