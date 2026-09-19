@@ -64,6 +64,31 @@ body {
   color: var(--ide-light) !important;
 }
 
+/* Nombres de Formato de Texto en Español: Título, Subtítulo, Cita, Texto */
+.ql-snow .ql-picker.ql-header {
+  width: 110px !important;
+}
+
+.ql-snow .ql-picker.ql-header .ql-picker-label::before,
+.ql-snow .ql-picker.ql-header .ql-picker-item::before {
+  content: 'Texto' !important;
+}
+
+.ql-snow .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
+.ql-snow .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
+  content: 'Título' !important;
+}
+
+.ql-snow .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
+.ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"]::before {
+  content: 'Subtítulo' !important;
+}
+
+.ql-snow .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
+.ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"]::before {
+  content: 'Cita' !important;
+}
+
 .ql-container {
   border: none !important;
   font-family: 'Inter', monospace;

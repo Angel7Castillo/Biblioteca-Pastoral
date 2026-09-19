@@ -61,6 +61,27 @@ export default function App() {
     }
   }, [isDarkMode]);
 
+  // Asignar tooltips explicativos a los botones de la barra de herramientas del editor
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const bq = document.querySelector('.ql-blockquote');
+      if (bq) bq.setAttribute('title', 'Cita / Bloque de Cita Bíblica');
+      const b = document.querySelector('.ql-bold');
+      if (b) b.setAttribute('title', 'Negrita');
+      const i = document.querySelector('.ql-italic');
+      if (i) i.setAttribute('title', 'Cursiva');
+      const u = document.querySelector('.ql-underline');
+      if (u) u.setAttribute('title', 'Subrayado');
+      const ol = document.querySelector('.ql-list[value="ordered"]');
+      if (ol) ol.setAttribute('title', 'Lista Numerada');
+      const ul = document.querySelector('.ql-list[value="bullet"]');
+      if (ul) ul.setAttribute('title', 'Lista con Viñetas');
+      const cl = document.querySelector('.ql-clean');
+      if (cl) cl.setAttribute('title', 'Limpiar Formato');
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [activeSermon]);
+
   // 1. Cargar Lista de Libros al cambiar de versión
   useEffect(() => {
     const fetchBooks = async () => {
