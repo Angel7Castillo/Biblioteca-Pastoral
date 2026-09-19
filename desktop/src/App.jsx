@@ -501,11 +501,11 @@ export default function App() {
           {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
         </button>
 
-        {/* 5. Botón Buscar Actualización */}
+        {/* 5. Botón Buscar Actualización (Único elemento a la DERECHA DEL TODO) */}
         <button 
           onClick={handleUpdateProxmox}
           disabled={isUpdatingServer}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm whitespace-nowrap ${isUpdatingServer ? 'bg-blue-600/50 text-white cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white hover:scale-105 active:scale-95'}`}
+          className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm whitespace-nowrap ${isUpdatingServer ? 'bg-blue-600/50 text-white cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white hover:scale-105 active:scale-95'}`}
           title="Buscar e instalar la última versión disponible desde GitHub"
         >
           <RefreshCw size={12} className={isUpdatingServer ? 'animate-spin' : ''} />
