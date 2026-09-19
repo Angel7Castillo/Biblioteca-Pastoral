@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Book, Edit3, Search, Sun, Moon, LayoutPanelTop, PanelLeft,
-  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save, Type, MoveVertical, Printer, StickyNote, MessageSquare, HelpCircle, BookMarked
+  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save, Type, MoveVertical, Printer, StickyNote, MessageSquare, HelpCircle, BookMarked, Tag, Hash, Layers, Filter, X
 } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -11,7 +11,8 @@ import { marked } from 'marked';
 import { 
   getSermons, createSermon, updateSermon, deleteSermon, duplicateSermon, 
   getBibleVerses, searchBible, getBibleBooks, getBibleChapters, updateProxmoxServer, getSystemStatus,
-  getBibleNotes, getNotesByChapter, saveBibleNote, deleteBibleNote
+  getBibleNotes, getNotesByChapter, saveBibleNote, deleteBibleNote,
+  getSermonSeriesList, getSermonTagsList
 } from './services/api';
 import PreacherMode from './components/PreacherMode';
 import StatusBar from './components/StatusBar';
@@ -46,6 +47,15 @@ export default function App() {
   const [sermonDate, setSermonDate] = useState('');
   const [sermonLocation, setSermonLocation] = useState('');
   const [sermonPassage, setSermonPassage] = useState('');
+
+  // Estados de Series & Etiquetas (#Tags)
+  const [sermonSeries, setSermonSeries] = useState('');
+  const [sermonTags, setSermonTags] = useState([]);
+  const [newTagInput, setNewTagInput] = useState('');
+  const [seriesFilter, setSeriesFilter] = useState('');
+  const [tagFilter, setTagFilter] = useState('');
+  const [availableSeries, setAvailableSeries] = useState([]);
+  const [availableTags, setAvailableTags] = useState([]);
 
   // Estados de Biblia Multiversión (RVR1960, NVI, TLA)
   const [bibleVersion, setBibleVersion] = useState('RVR1960');
@@ -231,7 +241,33 @@ export default function App() {
     setSermonDate(sermon.preach_date || '');
     setSermonLocation(sermon.location || '');
     setSermonPassage(sermon.main_passage || '');
+    setSermonSeries(sermon.series_name || '');
+    const tagsArr = Array.isArray(sermon.tags) ? sermon.tags : (typeof sermon.tags === 'string' ? JSON.parse(sermon.tags || '[]') : []);
+    setSermonTags(tagsArr);
   };
+
+  const handleAddTag = (tagToAdd) => {
+    const cleaned = tagToAdd.replace(/^#/, '').trim();
+    if (!cleaned) return;
+    if (!sermonTags.includes(cleaned)) {
+      setSermonTags([...sermonTags, cleaned]);
+    }
+    setNewTagInput('');
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setSermonTags(sermonTags.filter(t => t !== tagToRemove));
+  };
+
+  useEffect(() => {
+    const loadSeriesAndTags = async () => {
+      const sData = await getSermonSeriesList();
+      const tData = await getSermonTagsList();
+      setAvailableSeries(sData || []);
+      setAvailableTags(tData || []);
+    };
+    loadSeriesAndTags();
+  }, [sermons]);
 
   // 5. Autoguardado con Debounce (1 segundo)
   useEffect(() => {
@@ -253,7 +289,9 @@ export default function App() {
         status: sermonStatus,
         preach_date: sermonDate || null,
         location: sermonLocation || null,
-        main_passage: sermonPassage || null
+        main_passage: sermonPassage || null,
+        series_name: sermonSeries || null,
+        tags: sermonTags
       };
 
       await updateSermon(activeSermon.id, payload);
@@ -263,7 +301,7 @@ export default function App() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [sermonHtml, sermonTitle, sermonStatus, sermonDate, sermonLocation, sermonPassage, activeSermon]);
+  }, [sermonHtml, sermonTitle, sermonStatus, sermonDate, sermonLocation, sermonPassage, sermonSeries, sermonTags, activeSermon]);
 
   // 5b. Guardar Sermón Manualmente al hacer clic en el botón Guardar
   const handleManualSave = async () => {
@@ -283,7 +321,9 @@ export default function App() {
       status: sermonStatus,
       preach_date: sermonDate || null,
       location: sermonLocation || null,
-      main_passage: sermonPassage || null
+      main_passage: sermonPassage || null,
+      series_name: sermonSeries || null,
+      tags: sermonTags
     };
 
     await updateSermon(activeSermon.id, payload);
@@ -407,13 +447,21 @@ export default function App() {
   const currentBookName = booksList.find(b => b.book_number === currentBook)?.book_name || 'Juan';
 
   const filteredSermons = sermons.filter(s => {
+    if (seriesFilter && s.series_name !== seriesFilter) return false;
+    if (tagFilter) {
+      const sTags = Array.isArray(s.tags) ? s.tags : (typeof s.tags === 'string' ? JSON.parse(s.tags || '[]') : []);
+      if (!sTags.includes(tagFilter)) return false;
+    }
     if (!sermonSearchQuery.trim()) return true;
     const q = sermonSearchQuery.toLowerCase().trim();
     const matchTitle = (s.title || '').toLowerCase().includes(q);
     const matchPassage = (s.main_passage || '').toLowerCase().includes(q);
+    const matchSeries = (s.series_name || '').toLowerCase().includes(q);
     const matchTopic = (s.location || '').toLowerCase().includes(q);
+    const sTags = Array.isArray(s.tags) ? s.tags : (typeof s.tags === 'string' ? JSON.parse(s.tags || '[]') : []);
+    const matchTags = sTags.some(t => t.toLowerCase().includes(q));
     const matchContent = (s.content_markdown || s.content_html || '').toLowerCase().includes(q);
-    return matchTitle || matchPassage || matchTopic || matchContent;
+    return matchTitle || matchPassage || matchSeries || matchTopic || matchTags || matchContent;
   });
 
   const quillModules = {
@@ -603,7 +651,7 @@ export default function App() {
                     <Search size={13} className="absolute left-2.5 top-2.5 opacity-50" />
                     <input 
                       type="text"
-                      placeholder="Buscar por título, verso o tema..."
+                      placeholder="Buscar por título, verso, serie o tag..."
                       value={sermonSearchQuery}
                       onChange={(e) => setSermonSearchQuery(e.target.value)}
                       className={`w-full border rounded pl-8 pr-6 py-1.5 text-xs focus:outline-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white placeholder-gray-500' : 'bg-white border-[#D5D1C6] text-gray-900 placeholder-gray-400'}`}
@@ -620,36 +668,114 @@ export default function App() {
                   </div>
                 </div>
 
+                {/* Filtros por Serie o Etiqueta */}
+                {(availableSeries.length > 0 || availableTags.length > 0 || seriesFilter || tagFilter) && (
+                  <div className={`px-2.5 py-2 border-b text-xs flex flex-col gap-1.5 ${isDarkMode ? 'border-[#2A2E3E] bg-[#151720]/40' : 'border-[#D5D1C6] bg-white/40'}`}>
+                    
+                    {/* Selector de Serie */}
+                    {availableSeries.length > 0 && (
+                      <div className="flex items-center gap-1">
+                        <Layers size={12} className="text-amber-500" />
+                        <select 
+                          value={seriesFilter}
+                          onChange={(e) => setSeriesFilter(e.target.value)}
+                          className={`w-full text-[11px] p-1 rounded border focus:outline-none ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-slate-200' : 'bg-white border-slate-300 text-slate-800'}`}
+                        >
+                          <option value="">-- Filtrar por Serie ({availableSeries.length}) --</option>
+                          {availableSeries.map(s => (
+                            <option key={s.series_name} value={s.series_name}>
+                              📚 {s.series_name} ({s.count})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Chips de Etiquetas (#Tags) */}
+                    {availableTags.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                        {availableTags.slice(0, 6).map(t => (
+                          <button
+                            key={t.name}
+                            onClick={() => setTagFilter(tagFilter === t.name ? '' : t.name)}
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-semibold transition ${
+                              tagFilter === t.name 
+                                ? 'bg-purple-600 text-white shadow-sm' 
+                                : 'bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/20'
+                            }`}
+                          >
+                            #{t.name} ({t.count})
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Indicador de Filtros Activos & Reset */}
+                    {(seriesFilter || tagFilter) && (
+                      <div className="flex items-center justify-between text-[10px] pt-1 font-semibold text-amber-400">
+                        <span className="truncate">Filtro: {seriesFilter ? `Serie "${seriesFilter}"` : ''} {tagFilter ? `#${tagFilter}` : ''}</span>
+                        <button 
+                          onClick={() => { setSeriesFilter(''); setTagFilter(''); }}
+                          className="text-red-400 hover:underline cursor-pointer ml-1"
+                        >
+                          ✕ Limpiar
+                        </button>
+                      </div>
+                    )}
+
+                  </div>
+                )}
+
                 <div className="p-3 flex-1 overflow-y-auto space-y-2">
                   {filteredSermons.length > 0 ? (
-                    filteredSermons.map(s => (
-                      <div 
-                        key={s.id}
-                        onClick={() => selectSermon(s)}
-                        className={`group p-2.5 rounded-lg cursor-pointer transition-all flex flex-col gap-1 border ${activeSermon?.id === s.id ? (isDarkMode ? 'bg-[#202433] border-blue-500/50 text-white' : 'bg-white border-blue-500 text-gray-900 shadow-sm') : (isDarkMode ? 'border-transparent hover:bg-gray-800/30 text-gray-300' : 'border-transparent hover:bg-gray-300/40 text-gray-800')}`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-sm truncate">{s.title}</span>
-                          <button 
-                            onClick={(e) => handleDeleteSermon(e, s.id)}
-                            className="text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Eliminar"
-                          >
-                            <Trash2 size={12} />
-                          </button>
+                    filteredSermons.map(s => {
+                      const tagsArr = Array.isArray(s.tags) ? s.tags : (typeof s.tags === 'string' ? JSON.parse(s.tags || '[]') : []);
+                      return (
+                        <div 
+                          key={s.id}
+                          onClick={() => selectSermon(s)}
+                          className={`group p-2.5 rounded-lg cursor-pointer transition-all flex flex-col gap-1.5 border ${activeSermon?.id === s.id ? (isDarkMode ? 'bg-[#202433] border-blue-500/50 text-white' : 'bg-white border-blue-500 text-gray-900 shadow-sm') : (isDarkMode ? 'border-transparent hover:bg-gray-800/30 text-gray-300' : 'border-transparent hover:bg-gray-300/40 text-gray-800')}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-sm truncate">{s.title}</span>
+                            <button 
+                              onClick={(e) => handleDeleteSermon(e, s.id)}
+                              className="text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Eliminar"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+
+                          {s.series_name && (
+                            <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded flex items-center gap-1 w-fit">
+                              <Layers size={10} /> {s.series_name}
+                            </span>
+                          )}
+
+                          <div className="flex flex-wrap items-center gap-1.5 text-[10px] opacity-90">
+                            <span className={`px-1.5 py-0.5 rounded font-bold uppercase ${s.status === 'borrador' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : s.status === 'listo' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-green-500/20 text-green-600 dark:text-green-400'}`}>
+                              {s.status}
+                            </span>
+                            {s.main_passage && <span className="font-semibold text-blue-600 dark:text-blue-400 truncate max-w-[100px]">📖 {s.main_passage}</span>}
+                            {s.location && <span className="font-semibold text-emerald-600 dark:text-emerald-400 truncate max-w-[90px] bg-emerald-500/10 px-1 rounded">🏷️ {s.location}</span>}
+                          </div>
+
+                          {tagsArr.length > 0 && (
+                            <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                              {tagsArr.map(tag => (
+                                <span key={tag} className="text-[9px] font-medium text-purple-300 bg-purple-500/10 px-1.5 py-0.2 rounded border border-purple-500/20">
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        <div className="flex flex-wrap items-center gap-1.5 text-[10px] opacity-90">
-                          <span className={`px-1.5 py-0.5 rounded font-bold uppercase ${s.status === 'borrador' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : s.status === 'listo' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-green-500/20 text-green-600 dark:text-green-400'}`}>
-                            {s.status}
-                          </span>
-                          {s.main_passage && <span className="font-semibold text-blue-600 dark:text-blue-400 truncate max-w-[100px]">📖 {s.main_passage}</span>}
-                          {s.location && <span className="font-semibold text-emerald-600 dark:text-emerald-400 truncate max-w-[90px] bg-emerald-500/10 px-1 rounded">🏷️ {s.location}</span>}
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <div className="text-xs opacity-50 text-center py-6 italic select-none">
-                      No se encontraron sermones o apuntes para "{sermonSearchQuery}".
+                      No se encontraron sermones o apuntes para los filtros seleccionados.
                     </div>
                   )}
                 </div>
@@ -1100,11 +1226,11 @@ export default function App() {
                       />
                     </div>
 
-                    {/* Campos Fijos 2, 3 y 4: Verso Principal, Tema / Serie, Estado y Reutilizar */}
+                    {/* Campos Fijos: Verso Principal, Serie de Predicación, Tema, Estado, Reutilizar, Guardar, Imprimir */}
                     <div className="flex flex-wrap items-center gap-3 text-xs">
                       
-                      {/* Campo Fijo 2: Verso Principal */}
-                      <div className="flex items-center gap-1.5 flex-1 min-w-[170px]">
+                      {/* Campo 1: Verso Principal */}
+                      <div className="flex items-center gap-1.5 flex-1 min-w-[150px]">
                         <label className="font-bold text-[10px] uppercase opacity-80 min-w-[85px] text-blue-400 dark:text-blue-300">Verso Principal:</label>
                         <input 
                           type="text"
@@ -1115,14 +1241,34 @@ export default function App() {
                         />
                       </div>
 
-                      {/* Campo Fijo 3: Tema / Serie */}
+                      {/* Campo 2: Serie de Predicación */}
                       <div className="flex items-center gap-1.5 flex-1 min-w-[170px]">
-                        <label className="font-bold text-[10px] uppercase opacity-80 min-w-[70px] text-emerald-400 dark:text-emerald-300">Tema / Serie:</label>
+                        <label className="font-bold text-[10px] uppercase opacity-80 min-w-[55px] text-amber-500 dark:text-amber-400 flex items-center gap-0.5">
+                          <Layers size={11} /> Serie:
+                        </label>
+                        <input 
+                          type="text"
+                          list="series-list"
+                          value={sermonSeries}
+                          onChange={(e) => setSermonSeries(e.target.value)}
+                          placeholder="Ej: Serie Romanos, Vida en el Espíritu..."
+                          className={`border rounded px-2 py-1 focus:outline-none w-full text-xs font-semibold ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
+                        />
+                        <datalist id="series-list">
+                          {availableSeries.map(s => (
+                            <option key={s.series_name} value={s.series_name} />
+                          ))}
+                        </datalist>
+                      </div>
+
+                      {/* Campo 3: Tema / Lugar */}
+                      <div className="flex items-center gap-1.5 flex-1 min-w-[140px]">
+                        <label className="font-bold text-[10px] uppercase opacity-80 min-w-[50px] text-emerald-400 dark:text-emerald-300">Tema:</label>
                         <input 
                           type="text"
                           value={sermonLocation}
                           onChange={(e) => setSermonLocation(e.target.value)}
-                          placeholder="Ej: Familia, Fe, Gracia..."
+                          placeholder="Ej: Iglesia Central, Jóvenes..."
                           className={`border rounded px-2 py-1 focus:outline-none w-full text-xs font-semibold ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
                         />
                       </div>
@@ -1185,6 +1331,57 @@ export default function App() {
                         <Printer size={13} />
                         <span>Imprimir A4</span>
                       </button>
+                    </div>
+
+                    {/* Fila Secundaria de Metadatos: Etiquetas (#Tags) */}
+                    <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-gray-500/15 text-xs">
+                      <span className="font-bold text-[10px] uppercase opacity-80 text-purple-400 dark:text-purple-300 flex items-center gap-1">
+                        <Hash size={11} /> Etiquetas (#Tags):
+                      </span>
+
+                      <div className="flex flex-wrap items-center gap-1.5 flex-1">
+                        {sermonTags.map(tag => (
+                          <span 
+                            key={tag} 
+                            className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1"
+                          >
+                            #{tag}
+                            <button 
+                              type="button"
+                              onClick={() => handleRemoveTag(tag)}
+                              className="hover:text-red-400 font-bold ml-0.5 cursor-pointer"
+                              title="Quitar etiqueta"
+                            >
+                              ✕
+                            </button>
+                          </span>
+                        ))}
+
+                        <div className="flex items-center gap-1">
+                          <input 
+                            type="text"
+                            value={newTagInput}
+                            onChange={(e) => setNewTagInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddTag(newTagInput);
+                              }
+                            }}
+                            placeholder="+ Agregar tag (ej: Oración)"
+                            className={`border rounded-full px-2.5 py-0.5 text-[11px] focus:outline-none w-36 ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white placeholder-gray-500' : 'bg-white border-[#D5D1C6] text-gray-900 placeholder-gray-400'}`}
+                          />
+                          {newTagInput.trim() && (
+                            <button
+                              type="button"
+                              onClick={() => handleAddTag(newTagInput)}
+                              className="bg-purple-600 hover:bg-purple-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold cursor-pointer"
+                            >
+                              + Agregar
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
 

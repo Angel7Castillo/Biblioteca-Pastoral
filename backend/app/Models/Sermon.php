@@ -21,7 +21,13 @@ class Sermon extends Model
         'main_passage',
         'target_audience',
         'series_name',
+        'tags',
         'user_id',
+    ];
+
+    protected $casts = [
+        'tags' => 'array',
+        'preach_date' => 'date',
     ];
 
     protected static function boot()

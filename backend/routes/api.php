@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\V1\SystemController;
 Route::prefix('v1')->group(function () {
     // API de Sermones y Apuntes
     Route::get('/sermones', [SermonController::class, 'index']);
+    Route::get('/sermones/series', [SermonController::class, 'seriesList']);
+    Route::get('/sermones/etiquetas', [SermonController::class, 'tagsList']);
     Route::post('/sermones', [SermonController::class, 'store']);
     Route::get('/sermones/{id}', [SermonController::class, 'show']);
     Route::put('/sermones/{id}', [SermonController::class, 'update']);

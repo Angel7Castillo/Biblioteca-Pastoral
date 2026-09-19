@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, RotateCcw, X, Type, Clock, MapPin, Calendar, BookOpen } from 'lucide-react';
+import { Play, Pause, RotateCcw, X, Type, Clock, MapPin, Calendar, BookOpen, Layers, Hash } from 'lucide-react';
 
 export default function PreacherMode({ sermon, onClose, isDarkMode }) {
   const [fontSize, setFontSize] = useState(20); // px
@@ -81,11 +81,26 @@ export default function PreacherMode({ sermon, onClose, isDarkMode }) {
       </div>
 
       {/* Sermon Metadata Highlights */}
-      {(sermon.main_passage || sermon.location || sermon.preach_date) && (
-        <div className={`px-12 py-3 border-b flex items-center gap-6 text-xs font-semibold ${isDarkMode ? 'bg-[#1A1D27]/50 border-[#2A2E3E] text-gray-400' : 'bg-[#E0DECZ]/50 border-[#D0CEC5] text-gray-600'}`}>
+      {(sermon.main_passage || sermon.series_name || sermon.tags || sermon.location || sermon.preach_date) && (
+        <div className={`px-12 py-3 border-b flex flex-wrap items-center gap-6 text-xs font-semibold ${isDarkMode ? 'bg-[#1A1D27]/50 border-[#2A2E3E] text-gray-400' : 'bg-[#E0DECZ]/50 border-[#D0CEC5] text-gray-600'}`}>
           {sermon.main_passage && (
             <div className="flex items-center gap-1.5 text-blue-400 font-bold">
               <BookOpen size={14} /> Pasaje: {sermon.main_passage}
+            </div>
+          )}
+          {sermon.series_name && (
+            <div className="flex items-center gap-1.5 text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+              <Layers size={14} /> Serie: {sermon.series_name}
+            </div>
+          )}
+          {Array.isArray(sermon.tags) && sermon.tags.length > 0 && (
+            <div className="flex items-center gap-1.5 text-purple-300">
+              <Hash size={14} className="text-purple-400" />
+              {sermon.tags.map(t => (
+                <span key={t} className="bg-purple-500/20 px-2 py-0.5 rounded-full border border-purple-500/30 font-semibold">
+                  #{t}
+                </span>
+              ))}
             </div>
           )}
           {sermon.location && (

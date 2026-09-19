@@ -35,9 +35,53 @@ export async function getSermons(params = {}) {
     }
     throw new Error('Error en API');
   } catch (err) {
-    const cached = localStorage.getItem('cached_sermons');
-    return { data: cached ? JSON.parse(cached) : [], isOffline: true };
+    let cached = JSON.parse(localStorage.getItem('cached_sermons') || '[]');
+    if (params.series) {
+      cached = cached.filter(s => s.series_name === params.series);
+    }
+    if (params.tag) {
+      cached = cached.filter(s => Array.isArray(s.tags) && s.tags.includes(params.tag));
+    }
+    return { data: cached, isOffline: true };
   }
+}
+
+export async function getSermonSeriesList() {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/sermones/series`);
+    const data = await res.json();
+    if (data.success) return data.data;
+  } catch (err) {
+    // Fallback
+  }
+  const cached = JSON.parse(localStorage.getItem('cached_sermons') || '[]');
+  const counts = {};
+  cached.forEach(s => {
+    if (s.series_name) {
+      counts[s.series_name] = (counts[s.series_name] || 0) + 1;
+    }
+  });
+  return Object.keys(counts).map(name => ({ series_name: name, count: counts[name] }));
+}
+
+export async function getSermonTagsList() {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/sermones/etiquetas`);
+    const data = await res.json();
+    if (data.success) return data.data;
+  } catch (err) {
+    // Fallback
+  }
+  const cached = JSON.parse(localStorage.getItem('cached_sermons') || '[]');
+  const counts = {};
+  cached.forEach(s => {
+    const tags = Array.isArray(s.tags) ? s.tags : [];
+    tags.forEach(t => {
+      const trimmed = t.trim();
+      if (trimmed) counts[trimmed] = (counts[trimmed] || 0) + 1;
+    });
+  });
+  return Object.keys(counts).map(name => ({ name, count: counts[name] }));
 }
 
 export async function createSermon(sermonData) {

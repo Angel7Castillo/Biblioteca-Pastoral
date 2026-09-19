@@ -17,6 +17,18 @@ class SermonController extends Controller
             $query->where('status', $request->status);
         }
 
+        if ($request->filled('series')) {
+            $query->where('series_name', $request->series);
+        }
+
+        if ($request->filled('tag')) {
+            $tag = $request->tag;
+            $query->where(function ($q) use ($tag) {
+                $q->whereJsonContains('tags', $tag)
+                  ->orWhere('tags', 'like', "%\"{$tag}\"%");
+            });
+        }
+
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -46,6 +58,7 @@ class SermonController extends Controller
             'main_passage' => 'nullable|string|max:255',
             'target_audience' => 'nullable|string|max:255',
             'series_name' => 'nullable|string|max:255',
+            'tags' => 'nullable|array',
         ]);
 
         $sermon = Sermon::create([
@@ -59,6 +72,7 @@ class SermonController extends Controller
             'main_passage' => $validated['main_passage'] ?? null,
             'target_audience' => $validated['target_audience'] ?? null,
             'series_name' => $validated['series_name'] ?? null,
+            'tags' => $validated['tags'] ?? [],
         ]);
 
         return response()->json([
@@ -92,6 +106,7 @@ class SermonController extends Controller
             'main_passage' => 'nullable|string|max:255',
             'target_audience' => 'nullable|string|max:255',
             'series_name' => 'nullable|string|max:255',
+            'tags' => 'nullable|array',
         ]);
 
         $sermon->update($validated);
@@ -135,6 +150,55 @@ class SermonController extends Controller
             'success' => true,
             'message' => 'Sermón duplicado correctamente.',
             'data' => $cloned,
+        ]);
+    }
+
+    /**
+     * Obtener listado de Series de Predicación únicas con su conteo.
+     */
+    public function seriesList()
+    {
+        $series = Sermon::whereNotNull('series_name')
+            ->where('series_name', '!=', '')
+            ->selectRaw('series_name, COUNT(*) as count')
+            ->groupBy('series_name')
+            ->orderBy('series_name')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $series,
+        ]);
+    }
+
+    /**
+     * Obtener listado de Etiquetas únicas con su conteo.
+     */
+    public function tagsList()
+    {
+        $sermons = Sermon::whereNotNull('tags')->get();
+        $tagCounts = [];
+
+        foreach ($sermons as $sermon) {
+            $tags = is_array($sermon->tags) ? $sermon->tags : json_decode($sermon->tags, true) ?? [];
+            foreach ($tags as $tag) {
+                $trimmed = trim($tag);
+                if ($trimmed !== '') {
+                    $tagCounts[$trimmed] = ($tagCounts[$trimmed] ?? 0) + 1;
+                }
+            }
+        }
+
+        $result = [];
+        foreach ($tagCounts as $name => $count) {
+            $result[] = ['name' => $name, 'count' => $count];
+        }
+
+        usort($result, fn($a, $b) => strcmp($a['name'], $b['name']));
+
+        return response()->json([
+            'success' => true,
+            'data' => $result,
         ]);
     }
 }
