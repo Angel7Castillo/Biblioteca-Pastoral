@@ -10,7 +10,7 @@ import { marked } from 'marked';
 
 import { 
   getSermons, createSermon, updateSermon, deleteSermon, duplicateSermon, 
-  getBibleVerses, searchBible, getBibleBooks, getBibleChapters, updateProxmoxServer
+  getBibleVerses, searchBible, getBibleBooks, getBibleChapters, updateProxmoxServer, getSystemStatus
 } from './services/api';
 import PreacherMode from './components/PreacherMode';
 import StatusBar from './components/StatusBar';
@@ -22,6 +22,7 @@ export default function App() {
   const [isPreacherMode, setIsPreacherMode] = useState(false);
   const [isUpdatingServer, setIsUpdatingServer] = useState(false);
   const [serverNotice, setServerNotice] = useState(null);
+  const [serverCommit, setServerCommit] = useState('');
 
   // Estados de Sermones
   const [sermons, setSermons] = useState([]);
@@ -113,6 +114,13 @@ export default function App() {
 
   useEffect(() => {
     loadSermons();
+    const fetchStatus = async () => {
+      const res = await getSystemStatus();
+      if (res && res.commit) {
+        setServerCommit(res.commit);
+      }
+    };
+    fetchStatus();
   }, []);
 
   // 4. Seleccionar Sermón
@@ -269,22 +277,23 @@ export default function App() {
     setShowBiblePanel(true);
   };
 
-  // 13. Auto-Despliegue y Actualización en 1 Clic del Servidor Proxmox
+  // 13. Buscar e Instalar Actualización del Servidor Proxmox
   const handleUpdateProxmox = async () => {
     setIsUpdatingServer(true);
-    setServerNotice({ type: 'info', text: 'Iniciando sincronización y actualización del servidor Proxmox...' });
+    setServerNotice({ type: 'info', text: 'Buscando e instalando actualizaciones desde GitHub...' });
     const res = await updateProxmoxServer();
     setIsUpdatingServer(false);
     if (res.success) {
+      if (res.commit) setServerCommit(res.commit);
       setServerNotice({ 
         type: 'success', 
-        text: `¡Servidor Proxmox actualizado con éxito! Versión: ${res.commit}` 
+        text: `¡Servidor Proxmox actualizado con éxito! Versión instalada: ${res.commit}` 
       });
       setTimeout(() => setServerNotice(null), 8000);
     } else {
       setServerNotice({ 
         type: 'error', 
-        text: `Error al actualizar: ${res.message}` 
+        text: `Error al buscar actualización: ${res.message}` 
       });
       setTimeout(() => setServerNotice(null), 8000);
     }
@@ -329,18 +338,23 @@ export default function App() {
 
       {/* Top IDE Window Bar */}
       <div className={`h-10 border-b flex items-center px-4 justify-between text-xs font-semibold select-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-[#EFECE6] border-[#D5D1C6] text-gray-900'}`}>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           <span className="font-bold tracking-wider text-blue-600 dark:text-blue-400">BIBLIOTECA PASTORAL</span>
+          {serverCommit && (
+            <span className="text-[10px] px-2 py-0.5 rounded font-mono font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 max-w-[260px] truncate" title={`Última versión instalada: ${serverCommit}`}>
+              v2 • {serverCommit}
+            </span>
+          )}
         </div>
         <div className="flex items-center space-x-3">
           <button 
             onClick={handleUpdateProxmox}
             disabled={isUpdatingServer}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm ${isUpdatingServer ? 'bg-blue-600/50 text-white cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
-            title="Sincronizar y actualizar Servidor Proxmox desde GitHub en 1 Clic"
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm ${isUpdatingServer ? 'bg-blue-600/50 text-white cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white hover:scale-105 active:scale-95'}`}
+            title="Buscar e instalar la última versión disponible desde GitHub"
           >
             <RefreshCw size={12} className={isUpdatingServer ? 'animate-spin' : ''} />
-            <span>{isUpdatingServer ? 'Actualizando Proxmox...' : '⚡ Actualizar Servidor'}</span>
+            <span>{isUpdatingServer ? 'Buscando actualización...' : '⚡ Buscar actualización'}</span>
           </button>
           <button 
             onClick={() => setShowBiblePanel(!showBiblePanel)}
