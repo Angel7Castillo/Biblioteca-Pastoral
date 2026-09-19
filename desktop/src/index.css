@@ -92,7 +92,6 @@ body {
 .ql-container {
   border: none !important;
   font-family: 'Inter', monospace;
-  font-size: 15px;
   background-color: transparent;
 }
 
@@ -100,6 +99,8 @@ body {
   color: var(--ide-light) !important; 
   padding: 24px; 
   min-height: 200px; 
+  font-size: var(--editor-font-size, 16px) !important;
+  line-height: var(--editor-line-height, 1.6) !important;
 }
 
 .ql-editor.ql-blank::before { 

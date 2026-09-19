@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Book, Edit3, Search, Sun, Moon, LayoutPanelTop, 
-  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save
+  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save, Type, MoveVertical
 } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -53,6 +53,23 @@ export default function App() {
   const [bibleQuery, setBibleQuery] = useState('');
   const [searchVersionFilter, setSearchVersionFilter] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+
+  // Preferencias de Lectura y Escritura (Accesibilidad / Tamaño de Texto y Ventana)
+  const [bibleFontSize, setBibleFontSize] = useState(() => parseInt(localStorage.getItem('bibleFontSize')) || 16);
+  const [editorFontSize, setEditorFontSize] = useState(() => parseInt(localStorage.getItem('editorFontSize')) || 16);
+  const [biblePanelHeight, setBiblePanelHeight] = useState(() => localStorage.getItem('biblePanelHeight') || '50%');
+
+  useEffect(() => {
+    localStorage.setItem('bibleFontSize', bibleFontSize);
+  }, [bibleFontSize]);
+
+  useEffect(() => {
+    localStorage.setItem('editorFontSize', editorFontSize);
+  }, [editorFontSize]);
+
+  useEffect(() => {
+    localStorage.setItem('biblePanelHeight', biblePanelHeight);
+  }, [biblePanelHeight]);
 
   // Aplicar clase .light al elemento raíz
   useEffect(() => {
@@ -475,7 +492,10 @@ export default function App() {
           
           {/* Split 1: Visor Bíblico Multiversión (Top Split) */}
           {showBiblePanel && (
-            <div className={`h-1/2 border-b flex flex-col relative ${isDarkMode ? 'bg-[#0F111A] border-[#2A2E3E]' : 'bg-[#F8F6F0] border-[#D5D1C6]'}`}>
+            <div 
+              style={{ height: biblePanelHeight }}
+              className={`border-b flex flex-col relative transition-all duration-150 ${isDarkMode ? 'bg-[#0F111A] border-[#2A2E3E]' : 'bg-[#F8F6F0] border-[#D5D1C6]'}`}
+            >
               {/* Header Navegador Bíblico Directo e Intuitivo */}
               <div className={`p-2 px-4 flex flex-wrap items-center justify-between gap-3 border-b text-xs select-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-[#EFECE6] border-[#D5D1C6] text-gray-900'}`}>
                 
@@ -572,25 +592,67 @@ export default function App() {
                   )}
                 </div>
 
-                {/* Formulario de Búsqueda por Palabra al lado */}
-                <form onSubmit={handleBibleSearch} className="flex items-center gap-1.5 flex-1 min-w-[240px] justify-end">
-                  <div className="relative w-full max-w-xs">
-                    <Search size={14} className="absolute left-2.5 top-2.5 opacity-50" />
-                    <input 
-                      type="text"
-                      placeholder="Buscar por palabra (ej: fe, amor, pastor)..."
-                      value={bibleQuery}
-                      onChange={(e) => setBibleQuery(e.target.value)}
-                      className={`w-full border rounded pl-8 pr-2 py-1 text-xs focus:outline-none ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
-                    />
+                {/* Formulario de Búsqueda por Palabra y Ajustes de Vista Biblia */}
+                <div className="flex items-center gap-2.5 flex-1 min-w-[280px] justify-end flex-wrap">
+                  
+                  {/* Ajustes de Lectura: Tamaño de Letra y Altura del Panel */}
+                  <div className="flex items-center gap-1.5 border-r border-gray-500/20 pr-2">
+                    
+                    {/* Control A- / A+ Letra Biblia */}
+                    <div className={`flex items-center gap-1 border rounded px-1.5 py-0.5 ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6]'}`} title="Ajustar tamaño de letra para lectura bíblica">
+                      <Type size={12} className="text-blue-500 dark:text-blue-400" />
+                      <button 
+                        type="button"
+                        onClick={() => setBibleFontSize(prev => Math.max(12, prev - 2))}
+                        className="px-1 font-bold hover:text-blue-500 text-xs cursor-pointer select-none"
+                        title="Disminuir tamaño de letra de la Biblia"
+                      >A-</button>
+                      <span className="font-mono text-[11px] font-bold text-blue-500 dark:text-blue-400 px-0.5">{bibleFontSize}px</span>
+                      <button 
+                        type="button"
+                        onClick={() => setBibleFontSize(prev => Math.min(32, prev + 2))}
+                        className="px-1 font-bold hover:text-blue-500 text-xs cursor-pointer select-none"
+                        title="Aumentar tamaño de letra de la Biblia"
+                      >A+</button>
+                    </div>
+
+                    {/* Selector de Altura del Visor Bíblico */}
+                    <div className={`flex items-center gap-1 border rounded px-1.5 py-0.5 ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6]'}`} title="Ajustar la altura del panel de la Biblia">
+                      <MoveVertical size={12} className="text-emerald-500 dark:text-emerald-400" />
+                      <select 
+                        value={biblePanelHeight}
+                        onChange={(e) => setBiblePanelHeight(e.target.value)}
+                        className={`bg-transparent text-[11px] font-bold focus:outline-none cursor-pointer ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
+                      >
+                        <option value="35%">Alto: 35%</option>
+                        <option value="50%">Alto: 50%</option>
+                        <option value="65%">Alto: 65%</option>
+                        <option value="80%">Alto: 80%</option>
+                      </select>
+                    </div>
+
                   </div>
-                  <button 
-                    type="submit" 
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-xs font-bold shadow-sm transition-colors flex items-center gap-1"
-                  >
-                    <span>Buscar</span>
-                  </button>
-                </form>
+
+                  {/* Campo de Búsqueda Teológica */}
+                  <form onSubmit={handleBibleSearch} className="flex items-center gap-1.5">
+                    <div className="relative w-full max-w-[200px]">
+                      <Search size={13} className="absolute left-2.5 top-2.5 opacity-50" />
+                      <input 
+                        type="text"
+                        placeholder="Buscar palabra..."
+                        value={bibleQuery}
+                        onChange={(e) => setBibleQuery(e.target.value)}
+                        className={`w-full border rounded pl-8 pr-2 py-1 text-xs focus:outline-none ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
+                      />
+                    </div>
+                    <button 
+                      type="submit" 
+                      className="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-xs font-bold shadow-sm transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Buscar</span>
+                    </button>
+                  </form>
+                </div>
 
               </div>
 
@@ -644,7 +706,10 @@ export default function App() {
               )}
 
               {/* Visor de Versículos (Muestra todo el capítulo con el versículo objetivo resaltado) */}
-              <div className="flex-1 p-4 overflow-y-auto space-y-2 text-sm leading-relaxed">
+              <div 
+                style={{ fontSize: `${bibleFontSize}px`, lineHeight: 1.6 }}
+                className="flex-1 p-4 overflow-y-auto space-y-2 leading-relaxed"
+              >
                 {verses.length > 0 ? (
                   verses.map(v => {
                     const isHighlighted = currentVerseFilter && parseInt(currentVerseFilter) === v.verse;
@@ -731,6 +796,25 @@ export default function App() {
                       </select>
                     </div>
 
+                    {/* Ajuste de Tamaño de Letra del Editor de Escritura */}
+                    <div className={`flex items-center gap-1 border rounded px-2 py-0.5 ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6]'}`} title="Ajustar tamaño de letra para redacción del sermón">
+                      <Type size={12} className="text-blue-500 dark:text-blue-400" />
+                      <span className="text-[10px] font-bold uppercase opacity-80">Letra:</span>
+                      <button 
+                        type="button"
+                        onClick={() => setEditorFontSize(prev => Math.max(12, prev - 2))}
+                        className="px-1 font-bold hover:text-blue-500 text-xs cursor-pointer select-none"
+                        title="Disminuir tamaño de letra de escritura"
+                      >A-</button>
+                      <span className="font-mono text-[11px] font-bold text-blue-500 dark:text-blue-400 px-0.5">{editorFontSize}px</span>
+                      <button 
+                        type="button"
+                        onClick={() => setEditorFontSize(prev => Math.min(36, prev + 2))}
+                        className="px-1 font-bold hover:text-blue-500 text-xs cursor-pointer select-none"
+                        title="Aumentar tamaño de letra de escritura"
+                      >A+</button>
+                    </div>
+
                     {/* Reutilizar */}
                     <button 
                       onClick={handleDuplicateSermon}
@@ -753,7 +837,13 @@ export default function App() {
                 </div>
 
                 {/* Editor Content Canvas */}
-                <div className="flex-1 flex flex-col overflow-hidden">
+                <div 
+                  className="flex-1 flex flex-col overflow-hidden"
+                  style={{
+                    '--editor-font-size': `${editorFontSize}px`,
+                    '--editor-line-height': 1.6
+                  }}
+                >
                   <ReactQuill 
                     theme="snow"
                     value={sermonHtml}
