@@ -438,82 +438,80 @@ export default function App() {
       )}
 
       {/* Top IDE Window Bar */}
-      <div className={`h-10 border-b no-print flex items-center px-4 justify-between text-xs font-semibold select-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-[#EFECE6] border-[#D5D1C6] text-gray-900'}`}>
+      <div className={`h-10 border-b no-print flex items-center px-4 gap-3 overflow-x-auto text-xs font-semibold select-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-[#EFECE6] border-[#D5D1C6] text-gray-900'}`}>
         
-        {/* Left Side Header: Brand Title + Sermon Panel Toggle */}
-        <div className="flex items-center space-x-3">
-          <span className="font-bold tracking-wider text-blue-600 dark:text-blue-400">BIBLIOTECA PASTORAL</span>
-          <span className="text-[10px] px-2 py-0.5 rounded font-sans font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20" title="Versión 2.0 (Última versión disponible)">
-            v2.0
-          </span>
+        {/* Brand Title & Version */}
+        <span className="font-bold tracking-wider text-blue-600 dark:text-blue-400 whitespace-nowrap">BIBLIOTECA PASTORAL</span>
+        <span className="text-[10px] px-2 py-0.5 rounded font-sans font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 whitespace-nowrap" title="Versión 2.0 (Última versión disponible)">
+          v2.0
+        </span>
 
-          {/* Botón Explorador de Sermones después del Título */}
+        {/* 1. Botón Sermones (Explorador Lateral) */}
+        <button 
+          onClick={() => setShowSermonPanel(!showSermonPanel)}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm cursor-pointer whitespace-nowrap ${showSermonPanel ? (isDarkMode ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border border-blue-500/30' : 'bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-300') : 'bg-amber-500 hover:bg-amber-400 text-white shadow-md'}`}
+          title={showSermonPanel ? "Ocultar panel de sermones" : "Mostrar panel de sermones"}
+        >
+          <PanelLeft size={14} />
+          <span>{showSermonPanel ? 'Sermones' : '📂 Mostrar Sermones'}</span>
+        </button>
+
+        {/* 2. Selector de Modo de Vista (Ambos, Solo Biblia, Solo Escritura) */}
+        <div className={`flex items-center p-0.5 rounded border text-xs font-semibold select-none whitespace-nowrap ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6]'}`} title="Modo de pantalla y distribución de espacio">
           <button 
-            onClick={() => setShowSermonPanel(!showSermonPanel)}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm cursor-pointer ${showSermonPanel ? (isDarkMode ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border border-blue-500/30' : 'bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-300') : 'bg-amber-500 hover:bg-amber-400 text-white shadow-md'}`}
-            title={showSermonPanel ? "Ocultar panel de sermones" : "Mostrar panel de sermones"}
+            onClick={() => { setShowBiblePanel(true); setShowSermonEditor(true); }}
+            className={`px-2 py-0.5 rounded transition-all cursor-pointer ${showBiblePanel && showSermonEditor ? 'bg-blue-600 text-white font-bold shadow-sm' : 'opacity-70 hover:opacity-100'}`}
+            title="Vista Dividida: Ver Biblia y Editor al mismo tiempo"
           >
-            <PanelLeft size={14} />
-            <span>{showSermonPanel ? 'Sermones' : '📂 Mostrar Sermones'}</span>
+            📑 Ambos
+          </button>
+          <button 
+            onClick={() => { setShowBiblePanel(true); setShowSermonEditor(false); }}
+            className={`px-2 py-0.5 rounded transition-all cursor-pointer ${showBiblePanel && !showSermonEditor ? 'bg-blue-600 text-white font-bold shadow-sm' : 'opacity-70 hover:opacity-100'}`}
+            title="Solo Lectura: Ver únicamente el Visor Bíblico en pantalla completa"
+          >
+            📖 Solo Biblia
+          </button>
+          <button 
+            onClick={() => { setShowBiblePanel(false); setShowSermonEditor(true); }}
+            className={`px-2 py-0.5 rounded transition-all cursor-pointer ${!showBiblePanel && showSermonEditor ? 'bg-blue-600 text-white font-bold shadow-sm' : 'opacity-70 hover:opacity-100'}`}
+            title="Solo Escritura: Ver únicamente el Editor de Sermones en pantalla completa"
+          >
+            ✍️ Solo Editor
           </button>
         </div>
 
-        {/* Right Side Header: View Modes, Theme, Preacher Mode, System Updates */}
-        <div className="flex items-center space-x-3">
-          {/* Selector de Modo de Vista (Ambos, Solo Biblia, Solo Escritura) */}
-          <div className={`flex items-center p-0.5 rounded border text-xs font-semibold select-none ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6]'}`} title="Modo de pantalla y distribución de espacio">
-            <button 
-              onClick={() => { setShowBiblePanel(true); setShowSermonEditor(true); }}
-              className={`px-2 py-0.5 rounded transition-all cursor-pointer ${showBiblePanel && showSermonEditor ? 'bg-blue-600 text-white font-bold shadow-sm' : 'opacity-70 hover:opacity-100'}`}
-              title="Vista Dividida: Ver Biblia y Editor al mismo tiempo"
-            >
-              📑 Ambos
-            </button>
-            <button 
-              onClick={() => { setShowBiblePanel(true); setShowSermonEditor(false); }}
-              className={`px-2 py-0.5 rounded transition-all cursor-pointer ${showBiblePanel && !showSermonEditor ? 'bg-blue-600 text-white font-bold shadow-sm' : 'opacity-70 hover:opacity-100'}`}
-              title="Solo Lectura: Ver únicamente el Visor Bíblico en pantalla completa"
-            >
-              📖 Solo Biblia
-            </button>
-            <button 
-              onClick={() => { setShowBiblePanel(false); setShowSermonEditor(true); }}
-              className={`px-2 py-0.5 rounded transition-all cursor-pointer ${!showBiblePanel && showSermonEditor ? 'bg-blue-600 text-white font-bold shadow-sm' : 'opacity-70 hover:opacity-100'}`}
-              title="Solo Escritura: Ver únicamente el Editor de Sermones en pantalla completa"
-            >
-              ✍️ Solo Editor
-            </button>
-          </div>
-
+        {/* 3. Botón Modo Predicador */}
+        {activeSermon && (
           <button 
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className={`p-1 rounded transition-colors ${isDarkMode ? 'text-amber-400 hover:bg-amber-400/10' : 'text-indigo-600 hover:bg-indigo-600/10'}`}
-            title={isDarkMode ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+            onClick={() => setIsPreacherMode(true)}
+            className="flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm cursor-pointer whitespace-nowrap"
+            title="Iniciar Modo Predicador"
           >
-            {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
+            <Play size={12} /> Modo Predicador
           </button>
+        )}
 
-          {activeSermon && (
-            <button 
-              onClick={() => setIsPreacherMode(true)}
-              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm cursor-pointer"
-              title="Iniciar Modo Predicador"
-            >
-              <Play size={12} /> Modo Predicador
-            </button>
-          )}
+        {/* 4. Botón Modo Claro / Oscuro */}
+        <button 
+          onClick={() => setIsDarkMode(!isDarkMode)}
+          className={`p-1 rounded transition-colors whitespace-nowrap ${isDarkMode ? 'text-amber-400 hover:bg-amber-400/10' : 'text-indigo-600 hover:bg-indigo-600/10'}`}
+          title={isDarkMode ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+        >
+          {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
+        </button>
 
-          {/* Botón Buscar Actualización a la DERECHA DEL TODO */}
-          <button 
-            onClick={handleUpdateProxmox}
-            disabled={isUpdatingServer}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm ${isUpdatingServer ? 'bg-blue-600/50 text-white cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white hover:scale-105 active:scale-95'}`}
-            title="Buscar e instalar la última versión disponible desde GitHub"
-          >
-            <RefreshCw size={12} className={isUpdatingServer ? 'animate-spin' : ''} />
-            <span>{isUpdatingServer ? 'Buscando actualización...' : '⚡ Buscar actualización'}</span>
-          </button>
-        </div>
+        {/* 5. Botón Buscar Actualización */}
+        <button 
+          onClick={handleUpdateProxmox}
+          disabled={isUpdatingServer}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm whitespace-nowrap ${isUpdatingServer ? 'bg-blue-600/50 text-white cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white hover:scale-105 active:scale-95'}`}
+          title="Buscar e instalar la última versión disponible desde GitHub"
+        >
+          <RefreshCw size={12} className={isUpdatingServer ? 'animate-spin' : ''} />
+          <span>{isUpdatingServer ? 'Buscando actualización...' : '⚡ Buscar actualización'}</span>
+        </button>
+
       </div>
 
       {/* Main Workspace Layout */}
