@@ -377,6 +377,13 @@ export default function App() {
             <span>{isUpdatingServer ? 'Buscando actualización...' : '⚡ Buscar actualización'}</span>
           </button>
           <button 
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`p-1 rounded transition-colors ${isDarkMode ? 'text-amber-400 hover:bg-amber-400/10' : 'text-indigo-600 hover:bg-indigo-600/10'}`}
+            title={isDarkMode ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+          >
+            {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
+          <button 
             onClick={() => setShowBiblePanel(!showBiblePanel)}
             className={`p-1 rounded transition-colors ${showBiblePanel ? 'bg-blue-600/20 text-blue-600 dark:text-blue-400' : 'hover:bg-gray-500/20'}`}
             title="Mostrar / Ocultar Visor Bíblico"
@@ -386,7 +393,7 @@ export default function App() {
           {activeSermon && (
             <button 
               onClick={() => setIsPreacherMode(true)}
-              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm"
+              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm cursor-pointer"
               title="Iniciar Modo Predicador"
             >
               <Play size={12} /> Modo Predicador
@@ -397,27 +404,6 @@ export default function App() {
 
       {/* Main Workspace Layout */}
       <div className="flex flex-1 overflow-hidden">
-        
-        {/* Activity Bar Left */}
-        <div className={`w-14 flex flex-col items-center py-4 border-r space-y-6 ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-[#E4E1D8] border-[#D5D1C6]'}`}>
-          <button 
-            onClick={() => setActiveTab('explorer')}
-            className={`p-2 rounded-lg transition-colors bg-blue-600/20 text-blue-600 dark:text-blue-400 font-bold`}
-            title="Mis Sermones y Apuntes"
-          >
-            <Edit3 size={22} />
-          </button>
-
-          <div className="flex-1"></div>
-
-          <button 
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'text-amber-400 hover:text-amber-300' : 'text-indigo-600 hover:text-indigo-800'}`}
-            title="Cambiar Tema (Oscuro / Claro)"
-          >
-            {isDarkMode ? <Sun size={22} /> : <Moon size={22} />}
-          </button>
-        </div>
 
         {/* Primary Side Panel (Sermones y Apuntes) */}
         <div className={`w-64 border-r flex flex-col ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-[#EFECE6] border-[#D5D1C6]'}`}>
