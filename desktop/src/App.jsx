@@ -136,14 +136,26 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [sermonHtml, sermonTitle, sermonStatus, sermonDate, sermonLocation, sermonPassage, activeSermon]);
 
-  // 6. Cargar Versículos Bíblicos según Versión, Libro, Capítulo y Versículo opcional
+  // 6. Cargar TODO el capítulo bíblico (para mantener el contexto completo)
   useEffect(() => {
     const fetchVerses = async () => {
-      const res = await getBibleVerses(currentBook, currentChapter, bibleVersion, currentVerseFilter);
+      const res = await getBibleVerses(currentBook, currentChapter, bibleVersion);
       setVerses(res.data);
     };
     fetchVerses();
-  }, [currentBook, currentChapter, bibleVersion, currentVerseFilter]);
+  }, [currentBook, currentChapter, bibleVersion]);
+
+  // Autodesplazamiento suave al versículo seleccionado cuando se especifica un filtro
+  useEffect(() => {
+    if (currentVerseFilter && verses.length > 0) {
+      const el = document.getElementById(`verse-${currentVerseFilter}`);
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 150);
+      }
+    }
+  }, [currentVerseFilter, verses]);
 
   // 7. Crear Nuevo Sermón
   const handleCreateSermon = async () => {
@@ -544,42 +556,48 @@ export default function App() {
               {/* Header Navegador Bíblico Directo */}
               <div className={`h-10 px-4 flex items-center justify-between border-b text-xs font-semibold ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-blue-400' : 'bg-[#EFECE6] border-[#D5D1C6] text-blue-700'}`}>
                 <div className="flex items-center gap-3">
-                  <span className="flex items-center gap-1.5 font-bold"><BookOpen size={14} /> {currentBookName} {currentChapter}{currentVerseFilter ? `:${currentVerseFilter}` : ''}</span>
+                  <span className="flex items-center gap-1.5 font-bold text-sm"><BookOpen size={16} /> {currentBookName} {currentChapter}</span>
                   <span className="opacity-40">|</span>
                   <span className="px-2 py-0.5 rounded font-bold uppercase bg-blue-500/20 text-blue-600 dark:text-blue-400 text-[11px]">{bibleVersion}</span>
+                  {currentVerseFilter && (
+                    <span className="flex items-center gap-1.5 px-2 py-0.5 rounded font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px]">
+                      🎯 Resaltando Versículo {currentVerseFilter}
+                      <button 
+                        onClick={() => setCurrentVerseFilter('')}
+                        className="hover:text-red-500 font-bold ml-1"
+                        title="Quitar resalte"
+                      >✕</button>
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-3 text-[11px]">
-                  {currentVerseFilter && (
-                    <button 
-                      onClick={() => setCurrentVerseFilter('')}
-                      className="text-blue-500 hover:underline font-semibold"
-                    >
-                      Ver capítulo entero
-                    </button>
-                  )}
-                  <span className="text-[10px] opacity-75">Haz clic en cualquier versículo para insertarlo en tu sermón</span>
+                  <span className="text-[10px] opacity-75">Capítulo completo en pantalla • Haz clic en un versículo para insertarlo</span>
                 </div>
               </div>
 
-              {/* Visor de Versículos */}
+              {/* Visor de Versículos (Muestra todo el capítulo con el versículo objetivo resaltado) */}
               <div className="flex-1 p-4 overflow-y-auto space-y-2 text-sm leading-relaxed">
                 {verses.length > 0 ? (
-                  verses.map(v => (
-                    <p 
-                      key={v.id || v.verse}
-                      onClick={() => insertVerseToSermon(v.book_name || currentBookName, v.verse, v.scripture)}
-                      className={`p-2 rounded cursor-pointer transition-colors group flex items-start gap-2 border ${currentVerseFilter && parseInt(currentVerseFilter) === v.verse ? (isDarkMode ? 'bg-blue-600/20 border-blue-500 text-white font-medium' : 'bg-blue-100 border-blue-500 text-gray-900 font-medium') : (isDarkMode ? 'border-transparent hover:bg-blue-500/10 text-gray-200' : 'border-transparent hover:bg-blue-600/10 text-gray-900')}`}
-                      title="Haz clic para insertar este versículo en tu sermón"
-                    >
-                      <sup className="text-blue-600 dark:text-blue-400 font-bold mt-1 select-none text-xs">{v.verse}</sup>
-                      <span className="flex-1">{v.scripture}</span>
-                      <span className="opacity-0 group-hover:opacity-100 text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded font-bold shadow-sm">
-                        + Insertar ({bibleVersion})
-                      </span>
-                    </p>
-                  ))
+                  verses.map(v => {
+                    const isHighlighted = currentVerseFilter && parseInt(currentVerseFilter) === v.verse;
+                    return (
+                      <p 
+                        key={v.id || v.verse}
+                        id={`verse-${v.verse}`}
+                        onClick={() => insertVerseToSermon(v.book_name || currentBookName, v.verse, v.scripture)}
+                        className={`p-2.5 rounded-lg cursor-pointer transition-all group flex items-start gap-2.5 border ${isHighlighted ? (isDarkMode ? 'bg-blue-600/30 border-l-4 border-blue-500 text-white font-medium shadow-md ring-1 ring-blue-500/50' : 'bg-blue-100 border-l-4 border-blue-600 text-gray-900 font-semibold shadow-sm') : (isDarkMode ? 'border-transparent hover:bg-blue-500/10 text-gray-200' : 'border-transparent hover:bg-blue-600/10 text-gray-900')}`}
+                        title="Haz clic para insertar este versículo en tu sermón"
+                      >
+                        <sup className={`font-bold mt-1 select-none text-xs ${isHighlighted ? 'text-blue-400 dark:text-blue-300 scale-110' : 'text-blue-600 dark:text-blue-400'}`}>{v.verse}</sup>
+                        <span className="flex-1 leading-relaxed">{v.scripture}</span>
+                        <span className="opacity-0 group-hover:opacity-100 text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded font-bold shadow-sm transition-opacity">
+                          + Insertar ({bibleVersion})
+                        </span>
+                      </p>
+                    );
+                  })
                 ) : (
-                  <p className="opacity-50 italic text-xs">Cargando versículos de {currentBookName} {currentChapter} ({bibleVersion})...</p>
+                  <p className="opacity-50 italic text-xs">Cargando contexto completo de {currentBookName} {currentChapter} ({bibleVersion})...</p>
                 )}
               </div>
             </div>
