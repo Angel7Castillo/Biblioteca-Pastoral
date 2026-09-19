@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Book, Edit3, Search, Sun, Moon, LayoutPanelTop, 
+  Book, Edit3, Search, Sun, Moon, LayoutPanelTop, PanelLeft,
   Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save, Type, MoveVertical, Printer
 } from 'lucide-react';
 import ReactQuill from 'react-quill';
@@ -18,6 +18,7 @@ import StatusBar from './components/StatusBar';
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState('explorer'); // 'explorer', 'bible', 'search'
+  const [showSermonPanel, setShowSermonPanel] = useState(true);
   const [showBiblePanel, setShowBiblePanel] = useState(true);
   const [isPreacherMode, setIsPreacherMode] = useState(false);
   const [isUpdatingServer, setIsUpdatingServer] = useState(false);
@@ -377,6 +378,13 @@ export default function App() {
             <span>{isUpdatingServer ? 'Buscando actualización...' : '⚡ Buscar actualización'}</span>
           </button>
           <button 
+            onClick={() => setShowSermonPanel(!showSermonPanel)}
+            className={`p-1 rounded transition-colors ${showSermonPanel ? 'bg-blue-600/20 text-blue-600 dark:text-blue-400' : 'hover:bg-gray-500/20'}`}
+            title="Mostrar / Ocultar Explorador de Sermones y Apuntes"
+          >
+            <PanelLeft size={15} />
+          </button>
+          <button 
             onClick={() => setIsDarkMode(!isDarkMode)}
             className={`p-1 rounded transition-colors ${isDarkMode ? 'text-amber-400 hover:bg-amber-400/10' : 'text-indigo-600 hover:bg-indigo-600/10'}`}
             title={isDarkMode ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
@@ -406,75 +414,86 @@ export default function App() {
       <div className="flex flex-1 overflow-hidden">
 
         {/* Primary Side Panel (Sermones y Apuntes) */}
-        <div className={`w-64 border-r flex flex-col ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-[#EFECE6] border-[#D5D1C6]'}`}>
-          <div className={`h-10 px-4 flex items-center justify-between border-b text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'border-[#2A2E3E] text-gray-400' : 'border-[#D5D1C6] text-gray-700'}`}>
-            <span>Sermones y Apuntes</span>
-            <button 
-              onClick={handleCreateSermon}
-              className="bg-blue-600 hover:bg-blue-500 text-white p-1 rounded transition-colors"
-              title="Nuevo Sermón"
-            >
-              <Plus size={14} />
-            </button>
-          </div>
-
-          {/* Buscador de Sermones y Apuntes (por título o versículo/pasaje) */}
-          <div className={`p-2.5 border-b ${isDarkMode ? 'border-[#2A2E3E]' : 'border-[#D5D1C6]'}`}>
-            <div className="relative">
-              <Search size={13} className="absolute left-2.5 top-2.5 opacity-50" />
-              <input 
-                type="text"
-                placeholder="Buscar por título, verso o tema..."
-                value={sermonSearchQuery}
-                onChange={(e) => setSermonSearchQuery(e.target.value)}
-                className={`w-full border rounded pl-8 pr-6 py-1.5 text-xs focus:outline-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white placeholder-gray-500' : 'bg-white border-[#D5D1C6] text-gray-900 placeholder-gray-400'}`}
-              />
-              {sermonSearchQuery && (
+        {showSermonPanel && (
+          <div className={`w-64 border-r flex flex-col transition-all duration-200 ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-[#EFECE6] border-[#D5D1C6]'}`}>
+            <div className={`h-10 px-3 flex items-center justify-between border-b text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'border-[#2A2E3E] text-gray-400' : 'border-[#D5D1C6] text-gray-700'}`}>
+              <span className="truncate">Sermones y Apuntes</span>
+              <div className="flex items-center gap-1">
                 <button 
-                  onClick={() => setSermonSearchQuery('')}
-                  className="absolute right-2 top-1.5 opacity-60 hover:opacity-100 text-xs font-bold px-1"
-                  title="Limpiar búsqueda"
+                  onClick={handleCreateSermon}
+                  className="bg-blue-600 hover:bg-blue-500 text-white p-1 rounded transition-colors cursor-pointer"
+                  title="Nuevo Sermón"
                 >
-                  ✕
+                  <Plus size={14} />
                 </button>
+                <button 
+                  onClick={() => setShowSermonPanel(false)}
+                  className="p-1 rounded hover:bg-gray-500/20 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                  title="Esconder panel a la izquierda"
+                >
+                  <PanelLeft size={14} />
+                </button>
+              </div>
+            </div>
+
+            {/* Buscador de Sermones y Apuntes (por título o versículo/pasaje) */}
+            <div className={`p-2.5 border-b ${isDarkMode ? 'border-[#2A2E3E]' : 'border-[#D5D1C6]'}`}>
+              <div className="relative">
+                <Search size={13} className="absolute left-2.5 top-2.5 opacity-50" />
+                <input 
+                  type="text"
+                  placeholder="Buscar por título, verso o tema..."
+                  value={sermonSearchQuery}
+                  onChange={(e) => setSermonSearchQuery(e.target.value)}
+                  className={`w-full border rounded pl-8 pr-6 py-1.5 text-xs focus:outline-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white placeholder-gray-500' : 'bg-white border-[#D5D1C6] text-gray-900 placeholder-gray-400'}`}
+                />
+                {sermonSearchQuery && (
+                  <button 
+                    onClick={() => setSermonSearchQuery('')}
+                    className="absolute right-2 top-1.5 opacity-60 hover:opacity-100 text-xs font-bold px-1"
+                    title="Limpiar búsqueda"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="p-3 flex-1 overflow-y-auto space-y-2">
+              {filteredSermons.length > 0 ? (
+                filteredSermons.map(s => (
+                  <div 
+                    key={s.id}
+                    onClick={() => selectSermon(s)}
+                    className={`group p-2.5 rounded-lg cursor-pointer transition-all flex flex-col gap-1 border ${activeSermon?.id === s.id ? (isDarkMode ? 'bg-[#202433] border-blue-500/50 text-white' : 'bg-white border-blue-500 text-gray-900 shadow-sm') : (isDarkMode ? 'border-transparent hover:bg-gray-800/30 text-gray-300' : 'border-transparent hover:bg-gray-300/40 text-gray-800')}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-sm truncate">{s.title}</span>
+                      <button 
+                        onClick={(e) => handleDeleteSermon(e, s.id)}
+                        className="text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Eliminar"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5 text-[10px] opacity-90">
+                      <span className={`px-1.5 py-0.5 rounded font-bold uppercase ${s.status === 'borrador' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : s.status === 'listo' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-green-500/20 text-green-600 dark:text-green-400'}`}>
+                        {s.status}
+                      </span>
+                      {s.main_passage && <span className="font-semibold text-blue-600 dark:text-blue-400 truncate max-w-[100px]">📖 {s.main_passage}</span>}
+                      {s.location && <span className="font-semibold text-emerald-600 dark:text-emerald-400 truncate max-w-[90px] bg-emerald-500/10 px-1 rounded">🏷️ {s.location}</span>}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs opacity-50 text-center py-6 italic select-none">
+                  No se encontraron sermones o apuntes para "{sermonSearchQuery}".
+                </div>
               )}
             </div>
           </div>
-
-          <div className="p-3 flex-1 overflow-y-auto space-y-2">
-            {filteredSermons.length > 0 ? (
-              filteredSermons.map(s => (
-                <div 
-                  key={s.id}
-                  onClick={() => selectSermon(s)}
-                  className={`group p-2.5 rounded-lg cursor-pointer transition-all flex flex-col gap-1 border ${activeSermon?.id === s.id ? (isDarkMode ? 'bg-[#202433] border-blue-500/50 text-white' : 'bg-white border-blue-500 text-gray-900 shadow-sm') : (isDarkMode ? 'border-transparent hover:bg-gray-800/30 text-gray-300' : 'border-transparent hover:bg-gray-300/40 text-gray-800')}`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-sm truncate">{s.title}</span>
-                    <button 
-                      onClick={(e) => handleDeleteSermon(e, s.id)}
-                      className="text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Eliminar"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-1.5 text-[10px] opacity-90">
-                    <span className={`px-1.5 py-0.5 rounded font-bold uppercase ${s.status === 'borrador' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : s.status === 'listo' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-green-500/20 text-green-600 dark:text-green-400'}`}>
-                      {s.status}
-                    </span>
-                    {s.main_passage && <span className="font-semibold text-blue-600 dark:text-blue-400 truncate max-w-[100px]">📖 {s.main_passage}</span>}
-                    {s.location && <span className="font-semibold text-emerald-600 dark:text-emerald-400 truncate max-w-[90px] bg-emerald-500/10 px-1 rounded">🏷️ {s.location}</span>}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-xs opacity-50 text-center py-6 italic select-none">
-                No se encontraron sermones o apuntes para "{sermonSearchQuery}".
-              </div>
-            )}
-          </div>
-        </div>
+        )}
 
         {/* Central Split Canvas */}
         <div className="flex-1 flex flex-col overflow-hidden">
