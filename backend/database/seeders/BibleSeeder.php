@@ -23,6 +23,12 @@ class BibleSeeder extends Seeder
             return;
         }
 
+        // Si la base de datos tiene versículos sin estructura de capítulos (>1), limpiar para re-importación
+        if (!$hasMultiChapters && $totalVerses > 0) {
+            $this->command->info("Detectados versículos corruptos con solo capítulo 1. Re-importando Biblia completa...");
+            BibleVerse::truncate();
+        }
+
         // Si los JSON existentes contienen el error de capítulo 1 único, forzar la regeneración
         $needConversion = false;
         foreach ($versions as $ver) {
