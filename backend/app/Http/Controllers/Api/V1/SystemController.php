@@ -18,6 +18,10 @@ class SystemController extends Controller
 
         $output = shell_exec($command);
 
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
+
         // Obtener último commit
         $commitInfo = shell_exec("export HOME=/tmp; git -C {$baseDir} log -1 --pretty=format:\"%h - %s (%cr)\" 2>&1");
 
