@@ -602,20 +602,18 @@ export default function App() {
                   <div className="flex items-center gap-1.5 border-r border-gray-500/20 pr-2">
                     
                     {/* Control A- / A+ Letra Biblia */}
-                    <div className={`flex items-center gap-1 border rounded px-1.5 py-0.5 ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6]'}`} title="Ajustar tamaño de letra para lectura bíblica">
-                      <Type size={12} className="text-blue-500 dark:text-blue-400" />
+                    <div className={`flex items-center gap-0.5 border rounded px-1 py-0.5 ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6]'}`} title={`Tamaño de letra de la Biblia: ${bibleFontSize}px`}>
                       <button 
                         type="button"
                         onClick={() => setBibleFontSize(prev => Math.max(12, prev - 2))}
-                        className="px-1 font-bold hover:text-blue-500 text-xs cursor-pointer select-none"
-                        title="Disminuir tamaño de letra de la Biblia"
+                        className={`px-1.5 py-0.5 rounded font-bold text-xs cursor-pointer select-none transition-colors ${isDarkMode ? 'hover:bg-blue-600/30 text-gray-200' : 'hover:bg-blue-100 text-gray-800'}`}
+                        title="Reducir letra de la Biblia (A-)"
                       >A-</button>
-                      <span className="font-mono text-[11px] font-bold text-blue-500 dark:text-blue-400 px-0.5">{bibleFontSize}px</span>
                       <button 
                         type="button"
                         onClick={() => setBibleFontSize(prev => Math.min(32, prev + 2))}
-                        className="px-1 font-bold hover:text-blue-500 text-xs cursor-pointer select-none"
-                        title="Aumentar tamaño de letra de la Biblia"
+                        className={`px-1.5 py-0.5 rounded font-bold text-xs cursor-pointer select-none transition-colors ${isDarkMode ? 'hover:bg-blue-600/30 text-gray-200' : 'hover:bg-blue-100 text-gray-800'}`}
+                        title="Aumentar letra de la Biblia (A+)"
                       >A+</button>
                     </div>
 
@@ -799,22 +797,19 @@ export default function App() {
                       </select>
                     </div>
 
-                    {/* Ajuste de Tamaño de Letra del Editor de Escritura */}
-                    <div className={`flex items-center gap-1 border rounded px-2 py-0.5 ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6]'}`} title="Ajustar tamaño de letra para redacción del sermón">
-                      <Type size={12} className="text-blue-500 dark:text-blue-400" />
-                      <span className="text-[10px] font-bold uppercase opacity-80">Letra:</span>
+                    {/* Control A- / A+ Letra Escritura */}
+                    <div className={`flex items-center gap-0.5 border rounded px-1 py-0.5 ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6]'}`} title={`Tamaño de letra del editor: ${editorFontSize}px`}>
                       <button 
                         type="button"
                         onClick={() => setEditorFontSize(prev => Math.max(12, prev - 2))}
-                        className="px-1 font-bold hover:text-blue-500 text-xs cursor-pointer select-none"
-                        title="Disminuir tamaño de letra de escritura"
+                        className={`px-1.5 py-0.5 rounded font-bold text-xs cursor-pointer select-none transition-colors ${isDarkMode ? 'hover:bg-blue-600/30 text-gray-200' : 'hover:bg-blue-100 text-gray-800'}`}
+                        title="Reducir letra del editor (A-)"
                       >A-</button>
-                      <span className="font-mono text-[11px] font-bold text-blue-500 dark:text-blue-400 px-0.5">{editorFontSize}px</span>
                       <button 
                         type="button"
                         onClick={() => setEditorFontSize(prev => Math.min(36, prev + 2))}
-                        className="px-1 font-bold hover:text-blue-500 text-xs cursor-pointer select-none"
-                        title="Aumentar tamaño de letra de escritura"
+                        className={`px-1.5 py-0.5 rounded font-bold text-xs cursor-pointer select-none transition-colors ${isDarkMode ? 'hover:bg-blue-600/30 text-gray-200' : 'hover:bg-blue-100 text-gray-800'}`}
+                        title="Aumentar letra del editor (A+)"
                       >A+</button>
                     </div>
 
