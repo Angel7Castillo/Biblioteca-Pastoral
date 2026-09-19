@@ -361,12 +361,26 @@ export default function App() {
 
       {/* Top IDE Window Bar */}
       <div className={`h-10 border-b flex items-center px-4 justify-between text-xs font-semibold select-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-[#EFECE6] border-[#D5D1C6] text-gray-900'}`}>
+        
+        {/* Left Side Header: Sermon Panel Toggle + Brand Title */}
         <div className="flex items-center space-x-3">
+          {/* Botón Explorador de Sermones en la IZQUIERDA (Misma zona del panel) */}
+          <button 
+            onClick={() => setShowSermonPanel(!showSermonPanel)}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm cursor-pointer ${showSermonPanel ? (isDarkMode ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border border-blue-500/30' : 'bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-300') : 'bg-amber-500 hover:bg-amber-400 text-white shadow-md'}`}
+            title={showSermonPanel ? "Ocultar panel de sermones" : "Mostrar panel de sermones"}
+          >
+            <PanelLeft size={14} />
+            <span>{showSermonPanel ? 'Sermones' : '📂 Mostrar Sermones'}</span>
+          </button>
+
           <span className="font-bold tracking-wider text-blue-600 dark:text-blue-400">BIBLIOTECA PASTORAL</span>
           <span className="text-[10px] px-2 py-0.5 rounded font-sans font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20" title="Versión 2.0 (Última versión disponible)">
-            v2.0 • Última versión
+            v2.0
           </span>
         </div>
+
+        {/* Right Side Header: System Updates, Theme, Bible Panel, Preacher Mode */}
         <div className="flex items-center space-x-3">
           <button 
             onClick={handleUpdateProxmox}
@@ -376,15 +390,6 @@ export default function App() {
           >
             <RefreshCw size={12} className={isUpdatingServer ? 'animate-spin' : ''} />
             <span>{isUpdatingServer ? 'Buscando actualización...' : '⚡ Buscar actualización'}</span>
-          </button>
-          {/* Botón Explorador de Sermones (Claro, visible y con texto cuando está oculto) */}
-          <button 
-            onClick={() => setShowSermonPanel(!showSermonPanel)}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm cursor-pointer ${showSermonPanel ? (isDarkMode ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30' : 'bg-blue-100 text-blue-700 hover:bg-blue-200') : 'bg-amber-500 hover:bg-amber-400 text-white animate-pulse'}`}
-            title={showSermonPanel ? "Ocultar panel de sermones" : "Mostrar panel de sermones"}
-          >
-            <PanelLeft size={14} />
-            <span>{showSermonPanel ? 'Sermones' : '📁 Mostrar Sermones'}</span>
           </button>
           <button 
             onClick={() => setIsDarkMode(!isDarkMode)}
