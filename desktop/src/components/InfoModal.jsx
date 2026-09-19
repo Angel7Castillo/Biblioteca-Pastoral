@@ -85,22 +85,22 @@ export default function InfoModal({ onClose, isDarkMode = true }) {
                   <Sparkles size={16} /> Propósito e Identidad
                 </h3>
                 <p>
-                  <strong>Biblioteca Pastoral</strong> es una solución tecnológica integral de código abierto diseñada para asistir a ministros, pastores y estudiosos bíblicos en la redacción homilética, consulta multiversión e investigación teológica de forma rápida, privada y sin distracciones.
+                  <strong>Biblioteca Pastoral</strong> es una solución tecnológica desarrollada y mantenida en privado por <strong>Ángel Castillo</strong>, distribuida de forma totalmente gratuita para asistir a ministros, pastores y estudiosos bíblicos en la redacción homilética, consulta multiversión e investigación teológica de forma rápida, privada y sin distracciones.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className={`p-3.5 rounded-lg border space-y-1.5 ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-gray-50 border-gray-200'}`}>
                   <span className="font-bold text-xs text-blue-400 flex items-center gap-1">
-                    <User size={14} /> Desarrollo & Autoría
+                    <User size={14} /> Desarrollo & Propiedad
                   </span>
                   <p className="font-semibold text-sm">Ángel Castillo</p>
-                  <p className="opacity-80 text-[11px]">Diseño de arquitectura, motor teológico y desarrollo de software.</p>
+                  <p className="opacity-80 text-[11px]">Diseño de arquitectura, motor teológico y control del proyecto.</p>
                 </div>
 
                 <div className={`p-3.5 rounded-lg border space-y-1.5 ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-gray-50 border-gray-200'}`}>
                   <span className="font-bold text-xs text-emerald-400 flex items-center gap-1">
-                    <Code size={14} /> Tecnologías Utilizadas
+                    <Code size={14} /> Arquitectura Híbrida
                   </span>
                   <p className="font-semibold text-xs">Laravel 11 • React • Vite • SQLite FTS5</p>
                   <p className="opacity-80 text-[11px]">Diseñado bajo principios Offline-First para uso local e insular.</p>
@@ -119,49 +119,40 @@ export default function InfoModal({ onClose, isDarkMode = true }) {
             </div>
           )}
 
-          {/* TAB 2: COLABORAR Y CONTACTO */}
+          {/* TAB 2: CONTACTO Y RETROALIMENTACIÓN */}
           {activeTab === 'collaborate' && (
             <div className="space-y-4 animate-fade-in">
               <div className={`p-4 rounded-lg border space-y-2 ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-emerald-50/50 border-emerald-200'}`}>
                 <h3 className="font-bold text-sm text-emerald-500 flex items-center gap-1.5">
-                  <HeartHandshake size={16} /> Comunidad & Colaboración Open Source
+                  <HeartHandshake size={16} /> Contacto & Sugerencias
                 </h3>
                 <p>
-                  Si eres desarrollador, diseñador, traductor o teólogo y deseas contribuir a mejorar esta herramienta para la iglesia, ¡tu colaboración es enormemente bienvenida!
+                  El código fuente de la plataforma se mantiene bajo control privado de su autor para garantizar la calidad, seguridad y dirección del software. No obstante, **la aplicación es y seguirá siendo 100% gratuita para su uso en la iglesia y el ministerio**.
                 </p>
               </div>
 
               <div className="space-y-3">
-                <h4 className="font-bold text-xs uppercase tracking-wider text-gray-400">¿Cómo puedes colaborar?</h4>
+                <h4 className="font-bold text-xs uppercase tracking-wider text-gray-400">¿Cómo puedes comunicar tus ideas?</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className={`p-3 rounded-lg border space-y-1 ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-gray-50 border-gray-200'}`}>
-                    <span className="font-bold text-xs text-blue-400">💻 Código Fuente & GitHub</span>
-                    <p className="text-[11px] opacity-80">Aporta correcciones, mejoras de UI o nuevas características en el repositorio principal.</p>
+                    <span className="font-bold text-xs text-blue-400">💡 Sugerencias y Nuevas Funciones</span>
+                    <p className="text-[11px] opacity-80">Propón ideas para incorporar nuevas herramientas, diccionarios o versiones bíblicas.</p>
                   </div>
                   <div className={`p-3 rounded-lg border space-y-1 ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-gray-50 border-gray-200'}`}>
-                    <span className="font-bold text-xs text-amber-400">💡 Sugerencias & Biblias</span>
-                    <p className="text-[11px] opacity-80">Reporta sugerencias para incorporar nuevas versiones bíblicas, comentarios o diccionarios.</p>
+                    <span className="font-bold text-xs text-amber-400">🐛 Reporte de Errores</span>
+                    <p className="text-[11px] opacity-80">Si detectas alguna falla en la impresión o el visor bíblico, comúnicaselo directamente al autor.</p>
                   </div>
                 </div>
               </div>
 
               <div className={`p-4 rounded-lg border space-y-3 ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-gray-100 border-gray-300'}`}>
-                <h4 className="font-bold text-xs text-blue-400">Canales Directos de Contacto:</h4>
+                <h4 className="font-bold text-xs text-blue-400">Canal Directo con el Desarrollador:</h4>
                 <div className="flex flex-wrap gap-3">
-                  <a 
-                    href="https://github.com/Angel7Castillo/Biblioteca-Pastoral" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded font-bold transition-all border border-gray-600 shadow-sm"
-                  >
-                    <Code2 size={14} /> GitHub Repositorio <ExternalLink size={12} />
-                  </a>
-
                   <a 
                     href="mailto:contact@angelcastillo.dev" 
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded font-bold transition-all shadow-sm"
                   >
-                    <Mail size={14} /> Enviar Mensaje / Contactar
+                    <Mail size={14} /> Enviar Correo al Autor
                   </a>
                 </div>
               </div>
