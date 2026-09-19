@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Book, Edit3, Search, Sun, Moon, LayoutPanelTop, PanelLeft,
-  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save, Type, MoveVertical, Printer, StickyNote, MessageSquare, HelpCircle
+  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save, Type, MoveVertical, Printer, StickyNote, MessageSquare, HelpCircle, BookMarked
 } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -16,6 +16,7 @@ import {
 import PreacherMode from './components/PreacherMode';
 import StatusBar from './components/StatusBar';
 import InfoModal from './components/InfoModal';
+import { DictionaryModal } from './components/DictionaryModal';
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -25,6 +26,7 @@ export default function App() {
   const [showSermonEditor, setShowSermonEditor] = useState(true);
   const [isPreacherMode, setIsPreacherMode] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [showDictionaryModal, setShowDictionaryModal] = useState(false);
   const [isUpdatingServer, setIsUpdatingServer] = useState(false);
   const [serverNotice, setServerNotice] = useState(null);
   const [serverCommit, setServerCommit] = useState('');
@@ -493,6 +495,15 @@ export default function App() {
             <Play size={12} /> Modo Predicador
           </button>
         )}
+
+        {/* 4. Botón Diccionario Teológico y Concordancia Strong */}
+        <button 
+          onClick={() => setShowDictionaryModal(true)}
+          className="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm cursor-pointer whitespace-nowrap"
+          title="Abrir Diccionario Teológico y Concordancia Strong (Hebreo & Griego)"
+        >
+          <BookMarked size={14} /> 📚 Diccionario
+        </button>
 
         {/* Botón Buscar Actualización */}
         <button 
@@ -1248,6 +1259,15 @@ export default function App() {
           isDarkMode={isDarkMode}
         />
       )}
+
+      {/* Diccionario Teológico & Concordancia Strong Modal */}
+      <DictionaryModal 
+        isOpen={showDictionaryModal}
+        onClose={() => setShowDictionaryModal(false)}
+        onInsertDefinition={(insertedText) => {
+          setSermonHtml(prev => prev + `<blockquote class="border-l-4 border-amber-500 pl-3 my-2 italic font-serif text-xs">${insertedText.replace(/\n/g, '<br/>')}</blockquote><p></p>`);
+        }}
+      />
 
       {/* Contenedor Exclusivo de Impresión A4 */}
       {activeSermon && (

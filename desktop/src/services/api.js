@@ -282,4 +282,88 @@ export async function deleteBibleNote(id) {
   localStorage.setItem('cached_bible_notes', JSON.stringify(filtered));
 }
 
+// ----------------------------------------------------
+// API DICCIONARIO STRONG Y TEOLÓGICO
+// ----------------------------------------------------
+const FALLBACK_STRONG = [
+  { code: 'G4151', original_word: 'πνεῦμα', transliteration: 'pneuma', pronunciation: "pnoy'-mah", definition: 'Viento, aliento, espíritu. Se refiere al Espíritu Santo, espíritu humano o seres espirituales.', type: 'greek' },
+  { code: 'G3056', original_word: 'λόγος', transliteration: 'logos', pronunciation: "log'-os", definition: 'Palabra, discurso, pensamiento revelado. Jesucristo como la Palabra encarnada (Juan 1:1).', type: 'greek' },
+  { code: 'G26', original_word: 'ἀγάπη', transliteration: 'agape', pronunciation: "ag-ah'-pay", definition: 'Amor divino, incondicional, sacrificial y voluntario. El amor supremo de Dios.', type: 'greek' },
+  { code: 'G5485', original_word: 'χάρις', transliteration: 'charis', pronunciation: "khar'-ece", definition: 'Gracia, favor inmerecido, benevolencia divina otorgando salvación gratuita.', type: 'greek' },
+  { code: 'G4102', original_word: 'πίστις', transliteration: 'pistis', pronunciation: "pis'-tis", definition: 'Fe, convicción firme y confianza personal en Dios y sus promesas.', type: 'greek' },
+  { code: 'H1254', original_word: 'בָּרָא', transliteration: 'bara', pronunciation: "baw-raw'", definition: 'Crear de la nada (ex nihilo). Verbo cuyo sujeto divino exclusivo es Dios (Génesis 1:1).', type: 'hebrew' },
+  { code: 'H430', original_word: 'אֱלֹהִים', transliteration: 'Elohim', pronunciation: "el-o-heem'", definition: 'Dios, Creador Soberano, Juez Supremo. Plural de majestad y plenitud de atributos divinos.', type: 'hebrew' },
+  { code: 'H3068', original_word: 'יְהוָה', transliteration: 'Yahweh / YHWH', pronunciation: "yeh-ho-vaw'", definition: 'EL SEÑOR. El nombre propio de Dios en el pacto ("Yo Soy el que Soy").', type: 'hebrew' },
+  { code: 'H7965', original_word: 'שָׁלוֹם', transliteration: 'shalom', pronunciation: "shaw-lome'", definition: 'Paz, plenitud, integridad, salud y prosperidad espiritual integral.', type: 'hebrew' }
+];
+
+const FALLBACK_THEOLOGICAL = [
+  { term: 'Justificación', category: 'Soteriología', definition: 'Declaración judicial por la cual Dios declara justo al pecador sobre la base de la justicia impecable de Jesucristo imputada únicamente mediante la fe.', cross_references: 'Romanos 3:24-26, Romanos 5:1' },
+  { term: 'Santificación', category: 'Soteriología', definition: 'Proceso continuo impulsado por el Espíritu Santo mediante el cual el creyente es transformado progresivamente a la imagen de Cristo.', cross_references: '1 Tesalonicenses 4:3, Filipenses 1:6' },
+  { term: 'Redención', category: 'Soteriología', definition: 'Rescate y liberación de la esclavitud del pecado pagado con la sangre preciosa de Cristo.', cross_references: 'Efesios 1:7, 1 Pedro 1:18-19' },
+  { term: 'Propiciación', category: 'Cristología / Expiación', definition: 'El acto sustitutivo de Cristo en la cruz mediante el cual se aplaca la justa ira de Dios contra el pecado.', cross_references: '1 Juan 2:2, Romanos 3:25' },
+  { term: 'Escatología', category: 'Teología Sistemática', definition: 'Estudio bíblico de los tiempos finales: Segunda Venida, resurrección, juicio final y Reino eterno.', cross_references: 'Apocalipsis 21-22, 1 Tesalonicenses 4:13-18' }
+];
+
+export async function getStrongByCode(code) {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/diccionario/strong/${code.toUpperCase()}`);
+    const data = await res.json();
+    if (data.success) return { data: data.data, isOffline: false };
+  } catch (err) {
+    // Fallback
+  }
+  const codeUpper = code.toUpperCase();
+  const match = FALLBACK_STRONG.find(s => s.code === codeUpper);
+  return { data: match || null, isOffline: true };
+}
+
+export async function searchStrongDictionary(query = '', type = '') {
+  try {
+    const queryParams = new URLSearchParams();
+    if (query) queryParams.append('q', query);
+    if (type) queryParams.append('type', type);
+    const res = await fetchWithTimeout(`${API_BASE_URL}/diccionario/strong/buscar?${queryParams.toString()}`);
+    const data = await res.json();
+    if (data.success) return { data: data.data, isOffline: false };
+  } catch (err) {
+    // Fallback
+  }
+  let filtered = FALLBACK_STRONG;
+  if (type) filtered = filtered.filter(s => s.type === type);
+  if (query) {
+    const qLower = query.toLowerCase();
+    filtered = filtered.filter(s =>
+      s.code.toLowerCase().includes(qLower) ||
+      s.transliteration.toLowerCase().includes(qLower) ||
+      s.definition.toLowerCase().includes(qLower) ||
+      s.original_word.includes(query)
+    );
+  }
+  return { data: filtered, isOffline: true };
+}
+
+export async function searchTheologicalDictionary(query = '') {
+  try {
+    const queryParams = new URLSearchParams();
+    if (query) queryParams.append('q', query);
+    const res = await fetchWithTimeout(`${API_BASE_URL}/diccionario/teologico?${queryParams.toString()}`);
+    const data = await res.json();
+    if (data.success) return { data: data.data, isOffline: false };
+  } catch (err) {
+    // Fallback
+  }
+  let filtered = FALLBACK_THEOLOGICAL;
+  if (query) {
+    const qLower = query.toLowerCase();
+    filtered = filtered.filter(t =>
+      t.term.toLowerCase().includes(qLower) ||
+      (t.category && t.category.toLowerCase().includes(qLower)) ||
+      t.definition.toLowerCase().includes(qLower)
+    );
+  }
+  return { data: filtered, isOffline: true };
+}
+
+
 

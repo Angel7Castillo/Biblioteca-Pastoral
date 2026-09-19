@@ -26,5 +26,8 @@ class DatabaseSeeder extends Seeder
 
         // Ejecutar Seeder Bíblico Multiversión (RVR1960, NVI, TLA)
         $this->call(BibleSeeder::class);
+
+        // Ejecutar Seeder de Diccionario Strong y Términos Teológicos
+        $this->call(StrongDictionarySeeder::class);
     }
 }

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\SermonController;
 use App\Http\Controllers\Api\V1\BibleController;
 use App\Http\Controllers\Api\V1\BibleNoteController;
+use App\Http\Controllers\Api\V1\DictionaryController;
 use App\Http\Controllers\Api\V1\SystemController;
 
 Route::prefix('v1')->group(function () {
@@ -26,6 +27,11 @@ Route::prefix('v1')->group(function () {
     Route::get('/notas/capitulo', [BibleNoteController::class, 'getByChapter']);
     Route::post('/notas', [BibleNoteController::class, 'store']);
     Route::delete('/notas/{id}', [BibleNoteController::class, 'destroy']);
+
+    // API de Diccionario Strong & Teológico
+    Route::get('/diccionario/strong/buscar', [DictionaryController::class, 'searchStrong']);
+    Route::get('/diccionario/strong/{code}', [DictionaryController::class, 'showStrong']);
+    Route::get('/diccionario/teologico', [DictionaryController::class, 'searchTheological']);
 
     // Mantenimiento y Auto-Despliegue del Servidor Proxmox
     Route::get('/sistema/estado', [SystemController::class, 'status']);
