@@ -959,12 +959,12 @@ export default function App() {
         <div className="print-only print-container">
           <div className="print-header">
             <h1>{sermonTitle || 'Sermón sin título'}</h1>
-            <div className="print-header-grid">
-              {sermonPassage && <div><strong>📖 Pasaje Principal:</strong> {sermonPassage}</div>}
-              {sermonLocation && <div><strong>🏷️ Tema / Serie:</strong> {sermonLocation}</div>}
-              <div><strong>📝 Palabras:</strong> {wordCount} palabras</div>
-              <div><strong>⏱️ Tiempo Estimado:</strong> ~{Math.ceil(wordCount / 130)} min predica</div>
-              <div className="col-span-2"><strong>📅 Fecha y Hora de Impresión:</strong> {new Date().toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+            <div className="print-header-compact">
+              {sermonPassage && <span><strong>📖 Pasaje:</strong> {sermonPassage}</span>}
+              {sermonLocation && <span><strong>🏷️ Tema:</strong> {sermonLocation}</span>}
+              <span><strong>📝 Palabras:</strong> {wordCount}</span>
+              <span><strong>⏱️ Tiempo:</strong> ~{Math.ceil(wordCount / 130)} min</span>
+              <span><strong>📅 Impreso:</strong> {new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })} {new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
           </div>
           <div 
