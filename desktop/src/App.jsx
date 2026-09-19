@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Book, Edit3, Search, Sun, Moon, LayoutPanelTop, PanelLeft,
-  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save, Type, MoveVertical, Printer
+  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save, Type, MoveVertical, Printer, StickyNote, MessageSquare
 } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -10,7 +10,8 @@ import { marked } from 'marked';
 
 import { 
   getSermons, createSermon, updateSermon, deleteSermon, duplicateSermon, 
-  getBibleVerses, searchBible, getBibleBooks, getBibleChapters, updateProxmoxServer, getSystemStatus
+  getBibleVerses, searchBible, getBibleBooks, getBibleChapters, updateProxmoxServer, getSystemStatus,
+  getBibleNotes, getNotesByChapter, saveBibleNote, deleteBibleNote
 } from './services/api';
 import PreacherMode from './components/PreacherMode';
 import StatusBar from './components/StatusBar';
@@ -55,6 +56,14 @@ export default function App() {
   const [bibleQuery, setBibleQuery] = useState('');
   const [searchVersionFilter, setSearchVersionFilter] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+
+  // Estados de Notas Bíblicas por Versículo
+  const [sidebarTab, setSidebarTab] = useState('sermons'); // 'sermons' | 'notes'
+  const [allBibleNotes, setAllBibleNotes] = useState([]);
+  const [chapterNotes, setChapterNotes] = useState([]);
+  const [activeNoteVerse, setActiveNoteVerse] = useState(null);
+  const [noteDraft, setNoteDraft] = useState('');
+  const [noteSearchQuery, setNoteSearchQuery] = useState('');
 
   // Preferencias de Lectura y Escritura (Accesibilidad / Tamaño de Texto y Ventana)
   const [bibleFontSize, setBibleFontSize] = useState(() => parseInt(localStorage.getItem('bibleFontSize')) || 16);
@@ -140,8 +149,20 @@ export default function App() {
     }
   };
 
+  // 3b. Cargar Notas Bíblicas Generales y por Capítulo
+  const loadAllBibleNotes = async () => {
+    const res = await getBibleNotes();
+    setAllBibleNotes(res.data || []);
+  };
+
+  const loadChapterNotes = async () => {
+    const res = await getNotesByChapter(currentBook, currentChapter);
+    setChapterNotes(res.data || []);
+  };
+
   useEffect(() => {
     loadSermons();
+    loadAllBibleNotes();
     const fetchStatus = async () => {
       const res = await getSystemStatus();
       if (res && res.commit) {
@@ -150,6 +171,52 @@ export default function App() {
     };
     fetchStatus();
   }, []);
+
+  useEffect(() => {
+    loadChapterNotes();
+    setActiveNoteVerse(null);
+  }, [currentBook, currentChapter]);
+
+  // Manejadores de Notas Bíblicas
+  const handleOpenNoteEditor = (verseNum, existingContent = '') => {
+    if (activeNoteVerse === verseNum) {
+      setActiveNoteVerse(null);
+      setNoteDraft('');
+    } else {
+      setActiveNoteVerse(verseNum);
+      setNoteDraft(existingContent);
+    }
+  };
+
+  const handleSaveVerseNote = async (verseNum) => {
+    if (!noteDraft.trim()) return;
+    const payload = {
+      book_number: currentBook,
+      chapter: currentChapter,
+      verse: verseNum,
+      version: bibleVersion,
+      content: noteDraft.trim()
+    };
+    await saveBibleNote(payload);
+    setActiveNoteVerse(null);
+    setNoteDraft('');
+    await loadChapterNotes();
+    await loadAllBibleNotes();
+  };
+
+  const handleDeleteVerseNote = async (noteId) => {
+    await deleteBibleNote(noteId);
+    setActiveNoteVerse(null);
+    setNoteDraft('');
+    await loadChapterNotes();
+    await loadAllBibleNotes();
+  };
+
+  const insertVerseAndNoteToSermon = (bookName, verseNum, scriptureText, noteContent) => {
+    if (!activeSermon) return;
+    const combinedQuote = `<blockquote class="border-l-4 border-amber-500 pl-3 my-2 italic font-serif"><strong>${bookName} ${currentChapter}:${verseNum} (${bibleVersion})</strong> - "${scriptureText}"<br/><span class="not-italic text-xs font-sans font-bold text-amber-600 dark:text-amber-400 mt-1 block">📝 Reflexión Teológica: "${noteContent}"</span></blockquote><p></p>`;
+    setSermonHtml(prev => prev + combinedQuote);
+  };
 
   // 4. Seleccionar Sermón
   const selectSermon = (sermon) => {
@@ -466,19 +533,21 @@ export default function App() {
           </button>
         )}
 
-        {/* Primary Side Panel (Sermones y Apuntes) */}
+        {/* Primary Side Panel (Sermones y Apuntes / Notas Bíblicas) */}
         {showSermonPanel && (
           <div className={`w-64 border-r flex flex-col transition-all duration-200 ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-[#EFECE6] border-[#D5D1C6]'}`}>
             <div className={`h-10 px-3 flex items-center justify-between border-b text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'border-[#2A2E3E] text-gray-400' : 'border-[#D5D1C6] text-gray-700'}`}>
-              <span className="truncate">Sermones y Apuntes</span>
+              <span className="truncate">{sidebarTab === 'sermons' ? 'Sermones y Apuntes' : 'Notas Bíblicas'}</span>
               <div className="flex items-center gap-1">
-                <button 
-                  onClick={handleCreateSermon}
-                  className="bg-blue-600 hover:bg-blue-500 text-white p-1 rounded transition-colors cursor-pointer"
-                  title="Nuevo Sermón"
-                >
-                  <Plus size={14} />
-                </button>
+                {sidebarTab === 'sermons' && (
+                  <button 
+                    onClick={handleCreateSermon}
+                    className="bg-blue-600 hover:bg-blue-500 text-white p-1 rounded transition-colors cursor-pointer"
+                    title="Nuevo Sermón"
+                  >
+                    <Plus size={14} />
+                  </button>
+                )}
                 <button 
                   onClick={() => setShowSermonPanel(false)}
                   className="p-1 rounded hover:bg-gray-500/20 text-gray-400 hover:text-white transition-colors cursor-pointer"
@@ -489,62 +558,173 @@ export default function App() {
               </div>
             </div>
 
-            {/* Buscador de Sermones y Apuntes (por título o versículo/pasaje) */}
-            <div className={`p-2.5 border-b ${isDarkMode ? 'border-[#2A2E3E]' : 'border-[#D5D1C6]'}`}>
-              <div className="relative">
-                <Search size={13} className="absolute left-2.5 top-2.5 opacity-50" />
-                <input 
-                  type="text"
-                  placeholder="Buscar por título, verso o tema..."
-                  value={sermonSearchQuery}
-                  onChange={(e) => setSermonSearchQuery(e.target.value)}
-                  className={`w-full border rounded pl-8 pr-6 py-1.5 text-xs focus:outline-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white placeholder-gray-500' : 'bg-white border-[#D5D1C6] text-gray-900 placeholder-gray-400'}`}
-                />
-                {sermonSearchQuery && (
-                  <button 
-                    onClick={() => setSermonSearchQuery('')}
-                    className="absolute right-2 top-1.5 opacity-60 hover:opacity-100 text-xs font-bold px-1"
-                    title="Limpiar búsqueda"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
+            {/* Pestañas del Panel Izquierdo: Sermones vs Notas Bíblicas */}
+            <div className="flex border-b border-gray-500/20 text-xs font-bold select-none">
+              <button 
+                onClick={() => setSidebarTab('sermons')}
+                className={`flex-1 py-2 text-center transition-colors border-b-2 flex items-center justify-center gap-1.5 cursor-pointer ${sidebarTab === 'sermons' ? 'border-blue-500 text-blue-500 bg-blue-500/10' : 'border-transparent opacity-70 hover:opacity-100'}`}
+              >
+                <BookOpen size={13} />
+                <span>Sermones ({sermons.length})</span>
+              </button>
+              <button 
+                onClick={() => setSidebarTab('notes')}
+                className={`flex-1 py-2 text-center transition-colors border-b-2 flex items-center justify-center gap-1.5 cursor-pointer ${sidebarTab === 'notes' ? 'border-amber-500 text-amber-500 bg-amber-500/10' : 'border-transparent opacity-70 hover:opacity-100'}`}
+              >
+                <StickyNote size={13} />
+                <span>Notas ({allBibleNotes.length})</span>
+              </button>
             </div>
 
-            <div className="p-3 flex-1 overflow-y-auto space-y-2">
-              {filteredSermons.length > 0 ? (
-                filteredSermons.map(s => (
-                  <div 
-                    key={s.id}
-                    onClick={() => selectSermon(s)}
-                    className={`group p-2.5 rounded-lg cursor-pointer transition-all flex flex-col gap-1 border ${activeSermon?.id === s.id ? (isDarkMode ? 'bg-[#202433] border-blue-500/50 text-white' : 'bg-white border-blue-500 text-gray-900 shadow-sm') : (isDarkMode ? 'border-transparent hover:bg-gray-800/30 text-gray-300' : 'border-transparent hover:bg-gray-300/40 text-gray-800')}`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-sm truncate">{s.title}</span>
+            {sidebarTab === 'sermons' ? (
+              <>
+                {/* Buscador de Sermones y Apuntes */}
+                <div className={`p-2.5 border-b ${isDarkMode ? 'border-[#2A2E3E]' : 'border-[#D5D1C6]'}`}>
+                  <div className="relative">
+                    <Search size={13} className="absolute left-2.5 top-2.5 opacity-50" />
+                    <input 
+                      type="text"
+                      placeholder="Buscar por título, verso o tema..."
+                      value={sermonSearchQuery}
+                      onChange={(e) => setSermonSearchQuery(e.target.value)}
+                      className={`w-full border rounded pl-8 pr-6 py-1.5 text-xs focus:outline-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white placeholder-gray-500' : 'bg-white border-[#D5D1C6] text-gray-900 placeholder-gray-400'}`}
+                    />
+                    {sermonSearchQuery && (
                       <button 
-                        onClick={(e) => handleDeleteSermon(e, s.id)}
-                        className="text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Eliminar"
+                        onClick={() => setSermonSearchQuery('')}
+                        className="absolute right-2 top-1.5 opacity-60 hover:opacity-100 text-xs font-bold px-1"
+                        title="Limpiar búsqueda"
                       >
-                        <Trash2 size={12} />
+                        ✕
                       </button>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5 text-[10px] opacity-90">
-                      <span className={`px-1.5 py-0.5 rounded font-bold uppercase ${s.status === 'borrador' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : s.status === 'listo' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-green-500/20 text-green-600 dark:text-green-400'}`}>
-                        {s.status}
-                      </span>
-                      {s.main_passage && <span className="font-semibold text-blue-600 dark:text-blue-400 truncate max-w-[100px]">📖 {s.main_passage}</span>}
-                      {s.location && <span className="font-semibold text-emerald-600 dark:text-emerald-400 truncate max-w-[90px] bg-emerald-500/10 px-1 rounded">🏷️ {s.location}</span>}
-                    </div>
+                    )}
                   </div>
-                ))
-              ) : (
-                <div className="text-xs opacity-50 text-center py-6 italic select-none">
-                  No se encontraron sermones o apuntes para "{sermonSearchQuery}".
                 </div>
-              )}
-            </div>
+
+                <div className="p-3 flex-1 overflow-y-auto space-y-2">
+                  {filteredSermons.length > 0 ? (
+                    filteredSermons.map(s => (
+                      <div 
+                        key={s.id}
+                        onClick={() => selectSermon(s)}
+                        className={`group p-2.5 rounded-lg cursor-pointer transition-all flex flex-col gap-1 border ${activeSermon?.id === s.id ? (isDarkMode ? 'bg-[#202433] border-blue-500/50 text-white' : 'bg-white border-blue-500 text-gray-900 shadow-sm') : (isDarkMode ? 'border-transparent hover:bg-gray-800/30 text-gray-300' : 'border-transparent hover:bg-gray-300/40 text-gray-800')}`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-sm truncate">{s.title}</span>
+                          <button 
+                            onClick={(e) => handleDeleteSermon(e, s.id)}
+                            className="text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Eliminar"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1.5 text-[10px] opacity-90">
+                          <span className={`px-1.5 py-0.5 rounded font-bold uppercase ${s.status === 'borrador' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : s.status === 'listo' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-green-500/20 text-green-600 dark:text-green-400'}`}>
+                            {s.status}
+                          </span>
+                          {s.main_passage && <span className="font-semibold text-blue-600 dark:text-blue-400 truncate max-w-[100px]">📖 {s.main_passage}</span>}
+                          {s.location && <span className="font-semibold text-emerald-600 dark:text-emerald-400 truncate max-w-[90px] bg-emerald-500/10 px-1 rounded">🏷️ {s.location}</span>}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-xs opacity-50 text-center py-6 italic select-none">
+                      No se encontraron sermones o apuntes para "{sermonSearchQuery}".
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Buscador de Notas Bíblicas */}
+                <div className={`p-2.5 border-b ${isDarkMode ? 'border-[#2A2E3E]' : 'border-[#D5D1C6]'}`}>
+                  <div className="relative">
+                    <Search size={13} className="absolute left-2.5 top-2.5 opacity-50" />
+                    <input 
+                      type="text"
+                      placeholder="Buscar en reflexiones y notas..."
+                      value={noteSearchQuery}
+                      onChange={(e) => setNoteSearchQuery(e.target.value)}
+                      className={`w-full border rounded pl-8 pr-6 py-1.5 text-xs focus:outline-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white placeholder-gray-500' : 'bg-white border-[#D5D1C6] text-gray-900 placeholder-gray-400'}`}
+                    />
+                    {noteSearchQuery && (
+                      <button 
+                        onClick={() => setNoteSearchQuery('')}
+                        className="absolute right-2 top-1.5 opacity-60 hover:opacity-100 text-xs font-bold px-1"
+                        title="Limpiar búsqueda"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-3 flex-1 overflow-y-auto space-y-2">
+                  {allBibleNotes.filter(n => {
+                    if (!noteSearchQuery.trim()) return true;
+                    const q = noteSearchQuery.toLowerCase().trim();
+                    const bName = (booksList.find(b => b.book_number === n.book_number)?.book_name || '').toLowerCase();
+                    const ref = `${bName} ${n.chapter}:${n.verse}`.toLowerCase();
+                    return ref.includes(q) || (n.content || '').toLowerCase().includes(q);
+                  }).length > 0 ? (
+                    allBibleNotes.filter(n => {
+                      if (!noteSearchQuery.trim()) return true;
+                      const q = noteSearchQuery.toLowerCase().trim();
+                      const bName = (booksList.find(b => b.book_number === n.book_number)?.book_name || '').toLowerCase();
+                      const ref = `${bName} ${n.chapter}:${n.verse}`.toLowerCase();
+                      return ref.includes(q) || (n.content || '').toLowerCase().includes(q);
+                    }).map(n => {
+                      const bName = booksList.find(b => b.book_number === n.book_number)?.book_name || `Libro ${n.book_number}`;
+                      return (
+                        <div 
+                          key={n.id}
+                          className={`p-2.5 rounded-lg transition-all flex flex-col gap-1.5 border ${isDarkMode ? 'bg-[#202433] border-amber-500/30 text-gray-200' : 'bg-amber-50/60 border-amber-300 text-gray-900 shadow-sm'}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                              <StickyNote size={12} /> {bName} {n.chapter}:{n.verse}
+                            </span>
+                            <button 
+                              onClick={() => handleDeleteVerseNote(n.id)}
+                              className="text-red-400 hover:text-red-300 p-0.5 transition-colors cursor-pointer"
+                              title="Eliminar nota"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                          <p className="text-xs italic line-clamp-3 opacity-90 leading-snug">{n.content}</p>
+                          <div className="flex items-center justify-between pt-1 border-t border-gray-500/10 text-[10px]">
+                            <button 
+                              onClick={() => {
+                                setCurrentBook(n.book_number);
+                                setCurrentChapter(n.chapter);
+                                setCurrentVerseFilter(n.verse);
+                                setShowBiblePanel(true);
+                                setTimeout(() => {
+                                  const el = document.getElementById(`verse-${n.verse}`);
+                                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }, 300);
+                              }}
+                              className="text-blue-500 hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                            >
+                              <BookOpen size={10} /> Ir al pasaje
+                            </button>
+                            <span className="opacity-50 font-mono text-[9px]">
+                              {new Date(n.updated_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-xs opacity-50 text-center py-6 italic select-none">
+                      No hay notas bíblicas guardadas.
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -772,20 +952,106 @@ export default function App() {
                 {verses.length > 0 ? (
                   verses.map(v => {
                     const isHighlighted = currentVerseFilter && parseInt(currentVerseFilter) === v.verse;
+                    const verseNote = chapterNotes.find(n => n.verse === v.verse);
+                    const isEditingThisNote = activeNoteVerse === v.verse;
+                    const currentBName = v.book_name || currentBookName;
+
                     return (
-                      <p 
-                        key={v.id || v.verse}
-                        id={`verse-${v.verse}`}
-                        onClick={() => insertVerseToSermon(v.book_name || currentBookName, v.verse, v.scripture)}
-                        className={`p-2.5 rounded-lg cursor-pointer transition-all group flex items-start gap-2.5 border ${isHighlighted ? (isDarkMode ? 'bg-blue-600/30 border-l-4 border-blue-500 text-white font-medium shadow-md ring-1 ring-blue-500/50' : 'bg-blue-100 border-l-4 border-blue-600 text-gray-900 font-semibold shadow-sm') : (isDarkMode ? 'border-transparent hover:bg-blue-500/10 text-gray-200' : 'border-transparent hover:bg-blue-600/10 text-gray-900')}`}
-                        title="Haz clic para insertar este versículo en tu sermón"
-                      >
-                        <sup className={`font-bold mt-1 select-none text-xs ${isHighlighted ? 'text-blue-400 dark:text-blue-300 scale-110' : 'text-blue-600 dark:text-blue-400'}`}>{v.verse}</sup>
-                        <span className="flex-1 leading-relaxed">{v.scripture}</span>
-                        <span className="opacity-0 group-hover:opacity-100 text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded font-bold shadow-sm transition-opacity">
-                          + Insertar ({bibleVersion})
-                        </span>
-                      </p>
+                      <div key={v.id || v.verse} id={`verse-${v.verse}`} className="flex flex-col gap-1">
+                        <div 
+                          className={`p-2.5 rounded-lg cursor-pointer transition-all group flex items-start gap-2.5 border ${isHighlighted ? (isDarkMode ? 'bg-blue-600/30 border-l-4 border-blue-500 text-white font-medium shadow-md ring-1 ring-blue-500/50' : 'bg-blue-100 border-l-4 border-blue-600 text-gray-900 font-semibold shadow-sm') : (isDarkMode ? 'border-transparent hover:bg-blue-500/10 text-gray-200' : 'border-transparent hover:bg-blue-600/10 text-gray-900')}`}
+                        >
+                          <sup className={`font-bold mt-1 select-none text-xs ${isHighlighted ? 'text-blue-400 dark:text-blue-300 scale-110' : 'text-blue-600 dark:text-blue-400'}`}>{v.verse}</sup>
+                          <span 
+                            onClick={() => insertVerseToSermon(currentBName, v.verse, v.scripture)}
+                            className="flex-1 leading-relaxed"
+                            title="Haz clic para insertar este versículo en tu sermón"
+                          >
+                            {v.scripture}
+                          </span>
+
+                          {/* Botones de Acción Rápida por Versículo */}
+                          <div className="flex items-center gap-1.5 select-none">
+                            <button 
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); handleOpenNoteEditor(v.verse, verseNote ? verseNote.content : ''); }}
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 transition-all border cursor-pointer ${verseNote ? 'bg-amber-500/20 border-amber-500/50 text-amber-500 dark:text-amber-400 shadow-sm' : 'bg-gray-500/10 border-gray-500/20 opacity-70 hover:opacity-100 text-gray-400'}`}
+                              title={verseNote ? "Editar la nota teológica de este versículo" : "Agregar una nota personal a este versículo"}
+                            >
+                              <StickyNote size={11} />
+                              <span>{verseNote ? '📝 Con Nota' : '+ Nota'}</span>
+                            </button>
+
+                            <button 
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); insertVerseToSermon(currentBName, v.verse, v.scripture); }}
+                              className="opacity-0 group-hover:opacity-100 text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded font-bold shadow-sm transition-opacity cursor-pointer"
+                              title="Insertar versículo en el borrador"
+                            >
+                              + Insertar
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Editor Flotante de Nota por Versículo */}
+                        {isEditingThisNote && (
+                          <div className={`p-3 rounded-lg border ml-6 shadow-xl space-y-2 z-10 transition-all ${isDarkMode ? 'bg-[#1A1D27] border-amber-500/40 text-white' : 'bg-amber-50 border-amber-300 text-gray-900'}`}>
+                            <div className="flex items-center justify-between text-xs font-bold text-amber-500">
+                              <span className="flex items-center gap-1">
+                                <StickyNote size={13} /> Nota Teológica: {currentBName} {currentChapter}:{v.verse}
+                              </span>
+                              <button 
+                                type="button" 
+                                onClick={() => setActiveNoteVerse(null)}
+                                className="opacity-70 hover:opacity-100 font-bold px-1 cursor-pointer"
+                              >
+                                ✕
+                              </button>
+                            </div>
+
+                            <textarea 
+                              rows={3}
+                              value={noteDraft}
+                              onChange={(e) => setNoteDraft(e.target.value)}
+                              placeholder="Escribe tus reflexiones, aplicaciones o referencias teológicas para este versículo..."
+                              className={`w-full p-2 border rounded text-xs focus:outline-none focus:ring-1 focus:ring-amber-500 ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white placeholder-gray-500' : 'bg-white border-amber-200 text-gray-900 placeholder-gray-400'}`}
+                            />
+
+                            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                              <div className="flex items-center gap-2">
+                                <button 
+                                  type="button"
+                                  onClick={() => handleSaveVerseNote(v.verse)}
+                                  className="bg-amber-600 hover:bg-amber-500 text-white px-3 py-1 rounded text-xs font-bold flex items-center gap-1 shadow-sm transition-colors cursor-pointer"
+                                >
+                                  <Save size={12} /> Guardar Nota
+                                </button>
+
+                                {verseNote && (
+                                  <button 
+                                    type="button"
+                                    onClick={() => insertVerseAndNoteToSermon(currentBName, v.verse, v.scripture, verseNote.content)}
+                                    className="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded text-xs font-bold flex items-center gap-1 shadow-sm transition-colors cursor-pointer"
+                                    title="Insertar versículo y tu reflexión personal en el borrador del sermón"
+                                  >
+                                    <Plus size={12} /> Versículo + Nota al Sermón
+                                  </button>
+                                )}
+                              </div>
+
+                              {verseNote && (
+                                <button 
+                                  type="button"
+                                  onClick={() => handleDeleteVerseNote(verseNote.id)}
+                                  className="text-red-400 hover:text-red-300 text-xs font-bold flex items-center gap-1 px-2 py-1 rounded hover:bg-red-500/10 cursor-pointer"
+                                >
+                                  <Trash2 size={12} /> Eliminar
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     );
                   })
                 ) : (

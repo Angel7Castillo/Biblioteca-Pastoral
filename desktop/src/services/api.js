@@ -202,4 +202,84 @@ export async function getSystemStatus() {
   }
 }
 
+// ----------------------------------------------------
+// API NOTAS BÍBLICAS POR VERSÍCULO
+// ----------------------------------------------------
+export async function getBibleNotes(params = {}) {
+  try {
+    const query = new URLSearchParams(params).toString();
+    const res = await fetchWithTimeout(`${API_BASE_URL}/notas${query ? `?${query}` : ''}`);
+    const data = await res.json();
+    if (data.success) {
+      localStorage.setItem('cached_bible_notes', JSON.stringify(data.data));
+      return { data: data.data, isOffline: false };
+    }
+    throw new Error('Error en API');
+  } catch (err) {
+    const cached = localStorage.getItem('cached_bible_notes');
+    return { data: cached ? JSON.parse(cached) : [], isOffline: true };
+  }
+}
+
+export async function getNotesByChapter(bookNumber, chapter) {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/notas/capitulo?book=${bookNumber}&chapter=${chapter}`);
+    const data = await res.json();
+    if (data.success) {
+      return { data: data.data, isOffline: false };
+    }
+    throw new Error('Error en API');
+  } catch (err) {
+    const cached = JSON.parse(localStorage.getItem('cached_bible_notes') || '[]');
+    const filtered = cached.filter(n => n.book_number === parseInt(bookNumber) && n.chapter === parseInt(chapter));
+    return { data: filtered, isOffline: true };
+  }
+}
+
+export async function saveBibleNote(noteData) {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/notas`, {
+      method: 'POST',
+      body: JSON.stringify(noteData)
+    });
+    const data = await res.json();
+    const cached = JSON.parse(localStorage.getItem('cached_bible_notes') || '[]');
+    const existingIndex = cached.findIndex(n => n.book_number === noteData.book_number && n.chapter === noteData.chapter && n.verse === noteData.verse);
+    if (existingIndex >= 0) {
+      cached[existingIndex] = { ...cached[existingIndex], ...data.data };
+    } else {
+      cached.unshift(data.data);
+    }
+    localStorage.setItem('cached_bible_notes', JSON.stringify(cached));
+    return data.data;
+  } catch (err) {
+    const cached = JSON.parse(localStorage.getItem('cached_bible_notes') || '[]');
+    const existingIndex = cached.findIndex(n => n.book_number === noteData.book_number && n.chapter === noteData.chapter && n.verse === noteData.verse);
+    const newNote = {
+      id: existingIndex >= 0 ? cached[existingIndex].id : Date.now(),
+      ...noteData,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    if (existingIndex >= 0) {
+      cached[existingIndex] = newNote;
+    } else {
+      cached.unshift(newNote);
+    }
+    localStorage.setItem('cached_bible_notes', JSON.stringify(cached));
+    return newNote;
+  }
+}
+
+export async function deleteBibleNote(id) {
+  try {
+    await fetchWithTimeout(`${API_BASE_URL}/notas/${id}`, { method: 'DELETE' });
+  } catch (err) {
+    // ignore
+  }
+  const cached = JSON.parse(localStorage.getItem('cached_bible_notes') || '[]');
+  const filtered = cached.filter(n => n.id !== id);
+  localStorage.setItem('cached_bible_notes', JSON.stringify(filtered));
+}
+
 
