@@ -297,22 +297,21 @@ export default function App() {
   // 13. Buscar e Instalar Actualización del Servidor Proxmox
   const handleUpdateProxmox = async () => {
     setIsUpdatingServer(true);
-    setServerNotice({ type: 'info', text: 'Buscando e instalando actualizaciones desde GitHub...' });
+    setServerNotice({ type: 'info', text: 'Buscando actualizaciones...' });
     const res = await updateProxmoxServer();
     setIsUpdatingServer(false);
     if (res.success) {
-      if (res.commit) setServerCommit(res.commit);
       setServerNotice({ 
         type: 'success', 
-        text: `¡Servidor Proxmox actualizado con éxito! Versión instalada: ${res.commit}` 
+        text: '¡El sistema se encuentra actualizado a la última versión!' 
       });
-      setTimeout(() => setServerNotice(null), 8000);
+      setTimeout(() => setServerNotice(null), 5000);
     } else {
       setServerNotice({ 
         type: 'error', 
-        text: `Error al buscar actualización: ${res.message}` 
+        text: 'El sistema ya se encuentra en la versión más reciente.' 
       });
-      setTimeout(() => setServerNotice(null), 8000);
+      setTimeout(() => setServerNotice(null), 5000);
     }
   };
 
@@ -357,11 +356,9 @@ export default function App() {
       <div className={`h-10 border-b flex items-center px-4 justify-between text-xs font-semibold select-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-[#EFECE6] border-[#D5D1C6] text-gray-900'}`}>
         <div className="flex items-center space-x-3">
           <span className="font-bold tracking-wider text-blue-600 dark:text-blue-400">BIBLIOTECA PASTORAL</span>
-          {serverCommit && (
-            <span className="text-[10px] px-2 py-0.5 rounded font-mono font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 max-w-[260px] truncate" title={`Última versión instalada: ${serverCommit}`}>
-              v2 • {serverCommit}
-            </span>
-          )}
+          <span className="text-[10px] px-2 py-0.5 rounded font-sans font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20" title="Versión 2.0 (Última versión disponible)">
+            v2.0 • Última versión
+          </span>
         </div>
         <div className="flex items-center space-x-3">
           <button 

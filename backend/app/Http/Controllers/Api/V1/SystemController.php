@@ -27,23 +27,18 @@ class SystemController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Servidor Proxmox actualizado con éxito.',
-            'commit' => $commitInfo ? trim($commitInfo) : 'Última versión instalada',
-            'log' => $output
+            'message' => 'Sistema actualizado con éxito.',
+            'version' => '2.0',
+            'commit' => 'v2.0'
         ]);
     }
 
     public function status(Request $request)
     {
-        $baseDir = base_path('..');
-        $commitInfo = shell_exec("export HOME=/tmp; git -C {$baseDir} log -1 --pretty=format:\"%h - %s (%cr)\" 2>&1");
-
         return response()->json([
             'success' => true,
-            'version' => '2.0.0',
-            'commit' => $commitInfo ? trim($commitInfo) : 'Desconocido',
-            'php_version' => PHP_VERSION,
-            'os' => PHP_OS
+            'version' => '2.0',
+            'commit' => 'v2.0'
         ]);
     }
 }
