@@ -410,11 +410,12 @@ export default function App() {
                       <Trash2 size={12} />
                     </button>
                   </div>
-                  <div className="flex items-center gap-2 text-[10px]">
+                  <div className="flex flex-wrap items-center gap-1.5 text-[10px] opacity-90">
                     <span className={`px-1.5 py-0.5 rounded font-bold uppercase ${s.status === 'borrador' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : s.status === 'listo' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-green-500/20 text-green-600 dark:text-green-400'}`}>
                       {s.status}
                     </span>
-                    {s.main_passage && <span className="truncate opacity-75">{s.main_passage}</span>}
+                    {s.main_passage && <span className="font-semibold text-blue-600 dark:text-blue-400 truncate max-w-[100px]">📖 {s.main_passage}</span>}
+                    {s.location && <span className="font-semibold text-emerald-600 dark:text-emerald-400 truncate max-w-[90px] bg-emerald-500/10 px-1 rounded">🏷️ {s.location}</span>}
                   </div>
                 </div>
               ))
@@ -632,21 +633,50 @@ export default function App() {
             {activeSermon ? (
               <>
                 {/* Sermon Header / Metadata Bar */}
-                <div className={`p-4 border-b flex flex-wrap gap-4 items-center justify-between ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-[#EFECE6] border-[#D5D1C6]'}`}>
-                  <div className="flex items-center gap-3 flex-1 min-w-[200px]">
+                <div className={`p-3 px-4 border-b flex flex-col gap-2.5 ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-[#EFECE6] border-[#D5D1C6]'}`}>
+                  
+                  {/* Campo Fijo 1: Título del Sermón */}
+                  <div className="flex items-center gap-2">
+                    <label className="font-bold text-xs uppercase text-blue-500 dark:text-blue-400 min-w-[60px]">Título:</label>
                     <input 
                       type="text"
                       value={sermonTitle}
                       onChange={(e) => setSermonTitle(e.target.value)}
-                      className={`bg-transparent text-lg font-bold focus:outline-none border-b border-transparent focus:border-blue-500 w-full ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
-                      placeholder="Título del Sermón..."
+                      className={`bg-transparent text-base font-bold focus:outline-none border-b border-gray-500/30 focus:border-blue-500 w-full px-1 py-0.5 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
+                      placeholder="Escribe el título del sermón o apunte..."
                     />
                   </div>
 
-                  {/* Metadata Fields */}
-                  <div className="flex items-center gap-4 text-xs">
+                  {/* Campos Fijos 2, 3 y 4: Verso Principal, Tema / Serie, Estado y Reutilizar */}
+                  <div className="flex flex-wrap items-center gap-3 text-xs">
+                    
+                    {/* Campo Fijo 2: Verso Principal */}
+                    <div className="flex items-center gap-1.5 flex-1 min-w-[170px]">
+                      <label className="font-bold text-[10px] uppercase opacity-80 min-w-[85px] text-blue-400 dark:text-blue-300">Verso Principal:</label>
+                      <input 
+                        type="text"
+                        value={sermonPassage}
+                        onChange={(e) => setSermonPassage(e.target.value)}
+                        placeholder="Ej: Juan 3:16"
+                        className={`border rounded px-2 py-1 focus:outline-none w-full text-xs font-semibold ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
+                      />
+                    </div>
+
+                    {/* Campo Fijo 3: Tema / Serie */}
+                    <div className="flex items-center gap-1.5 flex-1 min-w-[170px]">
+                      <label className="font-bold text-[10px] uppercase opacity-80 min-w-[70px] text-emerald-400 dark:text-emerald-300">Tema / Serie:</label>
+                      <input 
+                        type="text"
+                        value={sermonLocation}
+                        onChange={(e) => setSermonLocation(e.target.value)}
+                        placeholder="Ej: Familia, Fe, Gracia..."
+                        className={`border rounded px-2 py-1 focus:outline-none w-full text-xs font-semibold ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
+                      />
+                    </div>
+
+                    {/* Estado del Sermón */}
                     <div className="flex items-center gap-1.5">
-                      <label className="uppercase font-bold text-[10px] opacity-75">Estado:</label>
+                      <label className="font-bold text-[10px] uppercase opacity-80">Estado:</label>
                       <select 
                         value={sermonStatus}
                         onChange={(e) => setSermonStatus(e.target.value)}
@@ -658,17 +688,7 @@ export default function App() {
                       </select>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
-                      <label className="uppercase font-bold text-[10px] opacity-75">Pasaje:</label>
-                      <input 
-                        type="text"
-                        value={sermonPassage}
-                        onChange={(e) => setSermonPassage(e.target.value)}
-                        placeholder="Ej: Juan 3:16"
-                        className={`border rounded px-2 py-1 focus:outline-none w-28 text-xs ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
-                      />
-                    </div>
-
+                    {/* Reutilizar */}
                     <button 
                       onClick={handleDuplicateSermon}
                       className={`flex items-center gap-1 px-2.5 py-1 rounded transition-colors text-xs font-semibold border ${isDarkMode ? 'bg-gray-800 border-gray-700 text-white hover:bg-gray-700' : 'bg-white border-[#D5D1C6] text-gray-900 hover:bg-gray-100'}`}
