@@ -11,55 +11,8 @@
   --color-ide-hover: var(--ide-hover);
 }
 
-/* Custom Quill Editor Styles */
-.ql-toolbar {
-  background-color: var(--ide-sidebar) !important;
-  border: none !important;
-  border-bottom: 1px solid var(--ide-border) !important;
-  padding: 8px !important;
-}
-.ql-toolbar .ql-stroke { stroke: var(--ide-text) !important; }
-.ql-toolbar .ql-fill { fill: var(--ide-text) !important; }
-.ql-toolbar .ql-picker { color: var(--ide-text) !important; }
-.ql-toolbar button:hover .ql-stroke { stroke: var(--ide-light) !important; }
-.ql-toolbar .ql-picker-options {
-  background-color: var(--ide-sidebar) !important;
-  border-color: var(--ide-border) !important;
-}
-.ql-container {
-  border: none !important;
-  font-family: 'Inter', monospace;
-  font-size: 14px;
-  background-color: transparent;
-}
-.ql-editor { color: var(--ide-light); padding: 24px; min-height: 200px; }
-.ql-editor.ql-blank::before { color: var(--ide-textMuted); font-style: normal; }
-
-/* Hack para que H3 funcione como Cita Visualmente */
-.ql-editor h3 {
-  border-left: 4px solid var(--ide-accent);
-  padding-left: 1rem;
-  font-style: italic;
-  font-weight: normal;
-  color: var(--ide-textMuted);
-  margin-top: 1em;
-  margin-bottom: 1em;
-  font-size: 1em;
-}
-
-/* Translate Quill Labels to Spanish */
-body .ql-snow .ql-picker.ql-header { width: 140px !important; }
-body .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
-body .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="1"]::before { content: 'Título' !important; }
-body .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
-body .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"]::before { content: 'Subtítulo' !important; }
-body .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
-body .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"]::before { content: 'Cita' !important; }
-body .ql-snow .ql-picker.ql-header .ql-picker-label::before,
-body .ql-snow .ql-picker.ql-header .ql-picker-item::before { content: 'Párrafo texto' !important; }
-
 :root {
-  /* Dark Mode Variables (Default - Antigravity) */
+  /* Dark Mode Variables (Antigravity IDE Theme) */
   --ide-bg: #0F111A;
   --ide-sidebar: #1A1D27;
   --ide-activity: #151720;
@@ -72,25 +25,61 @@ body .ql-snow .ql-picker.ql-header .ql-picker-item::before { content: 'Párrafo 
 }
 
 :root.light {
-  /* Light Mode Variables (Premium Beige/Cream) */
-  --ide-bg: #F5F3ED;          
-  --ide-sidebar: #EBE9E2;     
-  --ide-activity: #E0DECZ;    
-  --ide-border: #D0CEC5;      
-  --ide-text: #5A5A5C;        
-  --ide-textMuted: #858585;
-  --ide-light: #1A1A1C;       
-  --ide-accent: #3B82F6;      
-  --ide-hover: #E2E0D6;       
+  /* Light Mode Variables (Pastoral Parchment Theme) */
+  --ide-bg: #F8F6F0;          
+  --ide-sidebar: #EFECE6;     
+  --ide-activity: #E4E1D8;    
+  --ide-border: #D5D1C6;      
+  --ide-text: #374151;        
+  --ide-textMuted: #6B7280;
+  --ide-light: #111827;       
+  --ide-accent: #2563EB;      
+  --ide-hover: #E2DFD6;       
 }
 
 body {
   background-color: var(--ide-bg);
-  color: var(--ide-text);
+  color: var(--ide-light);
   margin: 0;
   overflow: hidden;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Custom Quill Editor Styles for Theme */
+.ql-toolbar {
+  background-color: var(--ide-sidebar) !important;
+  border: none !important;
+  border-bottom: 1px solid var(--ide-border) !important;
+  padding: 8px !important;
+}
+
+.ql-toolbar .ql-stroke { stroke: var(--ide-light) !important; }
+.ql-toolbar .ql-fill { fill: var(--ide-light) !important; }
+.ql-toolbar .ql-picker { color: var(--ide-light) !important; }
+.ql-toolbar button:hover .ql-stroke { stroke: var(--ide-accent) !important; }
+.ql-toolbar .ql-picker-options {
+  background-color: var(--ide-sidebar) !important;
+  border-color: var(--ide-border) !important;
+  color: var(--ide-light) !important;
+}
+
+.ql-container {
+  border: none !important;
+  font-family: 'Inter', monospace;
+  font-size: 15px;
+  background-color: transparent;
+}
+
+.ql-editor { 
+  color: var(--ide-light) !important; 
+  padding: 24px; 
+  min-height: 200px; 
+}
+
+.ql-editor.ql-blank::before { 
+  color: var(--ide-textMuted) !important; 
+  font-style: normal; 
 }
 
 /* Custom Scrollbar */

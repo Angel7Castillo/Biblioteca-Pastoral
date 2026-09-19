@@ -23,6 +23,7 @@ backend/storage/framework/views/*
 backend/storage/logs/*
 backend/database/*.sqlite
 backend/database/*.sqlite-journal
+backend/database/bibles/*.json
 
 # Confidential Credentials (DO NOT PUSH)
 docs/Credenciales.md
