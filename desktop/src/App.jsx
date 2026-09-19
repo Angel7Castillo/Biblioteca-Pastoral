@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Book, Edit3, Search, Sun, Moon, LayoutPanelTop, PanelLeft,
-  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save, Type, MoveVertical, Printer, StickyNote, MessageSquare
+  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save, Type, MoveVertical, Printer, StickyNote, MessageSquare, HelpCircle
 } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -15,6 +15,7 @@ import {
 } from './services/api';
 import PreacherMode from './components/PreacherMode';
 import StatusBar from './components/StatusBar';
+import InfoModal from './components/InfoModal';
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -23,6 +24,7 @@ export default function App() {
   const [showBiblePanel, setShowBiblePanel] = useState(true);
   const [showSermonEditor, setShowSermonEditor] = useState(true);
   const [isPreacherMode, setIsPreacherMode] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   const [isUpdatingServer, setIsUpdatingServer] = useState(false);
   const [serverNotice, setServerNotice] = useState(null);
   const [serverCommit, setServerCommit] = useState('');
@@ -501,6 +503,15 @@ export default function App() {
         >
           <RefreshCw size={12} className={isUpdatingServer ? 'animate-spin' : ''} />
           <span>{isUpdatingServer ? 'Buscando actualización...' : '⚡ Buscar actualización'}</span>
+        </button>
+
+        {/* Botón de Información, Términos de Uso y Contacto (Al lado izquierdo del botón Día/Noche) */}
+        <button 
+          onClick={() => setShowInfoModal(true)}
+          className={`p-1.5 rounded transition-colors whitespace-nowrap cursor-pointer ${isDarkMode ? 'text-blue-400 hover:bg-blue-400/10' : 'text-blue-600 hover:bg-blue-600/10'}`}
+          title="Información de la Aplicación, Términos de Uso y Contacto"
+        >
+          <HelpCircle size={16} />
         </button>
 
         {/* Botón Modo Claro / Oscuro (A la DERECHA DEL TODO AL FINAL) */}
@@ -1226,6 +1237,14 @@ export default function App() {
         <PreacherMode 
           sermon={activeSermon}
           onClose={() => setIsPreacherMode(false)}
+          isDarkMode={isDarkMode}
+        />
+      )}
+
+      {/* Info & Legal Terms Modal */}
+      {showInfoModal && (
+        <InfoModal 
+          onClose={() => setShowInfoModal(false)}
           isDarkMode={isDarkMode}
         />
       )}
