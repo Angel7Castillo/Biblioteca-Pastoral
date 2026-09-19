@@ -971,9 +971,6 @@ export default function App() {
             className="print-body"
             dangerouslySetInnerHTML={{ __html: sermonHtml }}
           />
-          <div className="print-footer">
-            Biblioteca Pastoral v2 • Documento de Predicación
-          </div>
         </div>
       )}
 
