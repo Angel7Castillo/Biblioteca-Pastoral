@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Book, Edit3, Search, Sun, Moon, LayoutPanelTop, 
-  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save, Type, MoveVertical
+  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save, Type, MoveVertical, Printer
 } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -313,6 +313,12 @@ export default function App() {
       });
       setTimeout(() => setServerNotice(null), 5000);
     }
+  };
+
+  // 14. Imprimir Sermón en Formato A4 / Exportar a PDF
+  const handlePrintSermon = () => {
+    if (!activeSermon) return;
+    window.print();
   };
 
   const currentBookName = booksList.find(b => b.book_number === currentBook)?.book_name || 'Juan';
@@ -830,6 +836,16 @@ export default function App() {
                       <Save size={13} />
                       <span>Guardar</span>
                     </button>
+
+                    {/* Botón Imprimir en A4 / PDF */}
+                    <button 
+                      onClick={handlePrintSermon}
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded transition-all text-xs font-bold border cursor-pointer ${isDarkMode ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-400 hover:bg-emerald-600 hover:text-white' : 'bg-emerald-50 border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white'}`}
+                      title="Imprimir sermón en formato A4 / Guardar como PDF"
+                    >
+                      <Printer size={13} />
+                      <span>Imprimir A4</span>
+                    </button>
                   </div>
                 </div>
 
@@ -879,6 +895,27 @@ export default function App() {
           onClose={() => setIsPreacherMode(false)}
           isDarkMode={isDarkMode}
         />
+      )}
+
+      {/* Contenedor Exclusivo de Impresión A4 */}
+      {activeSermon && (
+        <div className="print-only print-container">
+          <div className="print-header">
+            <h1>{sermonTitle || 'Sermón sin título'}</h1>
+            <div className="print-header-meta">
+              {sermonPassage && <div><strong>Pasaje Principal:</strong> {sermonPassage}</div>}
+              {sermonLocation && <div><strong>Tema / Serie:</strong> {sermonLocation}</div>}
+              {sermonStatus && <div><strong>Estado:</strong> {sermonStatus}</div>}
+            </div>
+          </div>
+          <div 
+            className="print-body"
+            dangerouslySetInnerHTML={{ __html: sermonHtml }}
+          />
+          <div className="print-footer">
+            Biblioteca Pastoral v2 • Documento de Predicación A4
+          </div>
+        </div>
       )}
 
     </div>

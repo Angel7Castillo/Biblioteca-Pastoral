@@ -123,3 +123,114 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background-color: var(--ide-hover);
 }
+
+/* Ocultar contenedor de impresión en pantalla normal */
+@media screen {
+  .print-only {
+    display: none !important;
+  }
+}
+
+/* Reglas Estilo A4 para Impresión de Sermones y Apuntes */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 18mm 15mm 18mm 15mm;
+  }
+
+  /* Ocultar elementos de UI del IDE durante la impresión */
+  .no-print,
+  .ql-toolbar,
+  header,
+  nav,
+  aside,
+  button,
+  select,
+  input,
+  form {
+    display: none !important;
+  }
+
+  body, html, #root {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Mostrar exclusivamente el contenedor de impresión */
+  .print-only {
+    display: block !important;
+  }
+
+  .print-container {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: 'Georgia', 'Times New Roman', serif;
+  }
+
+  .print-header {
+    border-bottom: 2px solid #1e3a8a;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }
+
+  .print-header h1 {
+    font-size: 24pt;
+    font-weight: bold;
+    color: #1e3a8a;
+    margin: 0 0 8px 0;
+    line-height: 1.2;
+  }
+
+  .print-header-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 11pt;
+    font-family: 'Inter', sans-serif;
+    color: #374151;
+  }
+
+  .print-header-meta strong {
+    color: #111827;
+  }
+
+  .print-body {
+    font-size: 12pt;
+    line-height: 1.7;
+    color: #111827;
+  }
+
+  .print-body h1 { font-size: 18pt; margin-top: 16pt; font-weight: bold; color: #1e3a8a; page-break-after: avoid; }
+  .print-body h2 { font-size: 15pt; margin-top: 14pt; font-weight: bold; color: #1e40af; page-break-after: avoid; }
+  .print-body h3 { font-size: 13pt; margin-top: 12pt; font-weight: bold; page-break-after: avoid; }
+
+  .print-body p {
+    margin-bottom: 10pt;
+  }
+
+  .print-body blockquote {
+    border-left: 3px solid #2563eb !important;
+    padding-left: 12pt !important;
+    margin: 12pt 0 !important;
+    font-style: italic !important;
+    background-color: #f8fafc !important;
+  }
+
+  .print-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 9pt;
+    font-family: 'Inter', sans-serif;
+    color: #6b7280;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 6px;
+  }
+}
