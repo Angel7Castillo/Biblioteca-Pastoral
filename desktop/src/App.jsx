@@ -492,16 +492,7 @@ export default function App() {
           </button>
         )}
 
-        {/* 4. Botón Modo Claro / Oscuro */}
-        <button 
-          onClick={() => setIsDarkMode(!isDarkMode)}
-          className={`p-1 rounded transition-colors whitespace-nowrap ${isDarkMode ? 'text-amber-400 hover:bg-amber-400/10' : 'text-indigo-600 hover:bg-indigo-600/10'}`}
-          title={isDarkMode ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
-        >
-          {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
-        </button>
-
-        {/* 5. Botón Buscar Actualización (Único elemento a la DERECHA DEL TODO) */}
+        {/* Botón Buscar Actualización */}
         <button 
           onClick={handleUpdateProxmox}
           disabled={isUpdatingServer}
@@ -512,6 +503,14 @@ export default function App() {
           <span>{isUpdatingServer ? 'Buscando actualización...' : '⚡ Buscar actualización'}</span>
         </button>
 
+        {/* Botón Modo Claro / Oscuro (A la DERECHA DEL TODO AL FINAL) */}
+        <button 
+          onClick={() => setIsDarkMode(!isDarkMode)}
+          className={`p-1.5 rounded transition-colors whitespace-nowrap ${isDarkMode ? 'text-amber-400 hover:bg-amber-400/10' : 'text-indigo-600 hover:bg-indigo-600/10'}`}
+          title={isDarkMode ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+        >
+          {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
       </div>
 
       {/* Main Workspace Layout */}
