@@ -552,28 +552,173 @@ export default function App() {
           
           {/* Split 1: Visor Bíblico Multiversión (Top Split) */}
           {showBiblePanel && (
-            <div className={`h-1/2 border-b flex flex-col ${isDarkMode ? 'bg-[#0F111A] border-[#2A2E3E]' : 'bg-[#F8F6F0] border-[#D5D1C6]'}`}>
-              {/* Header Navegador Bíblico Directo */}
-              <div className={`h-10 px-4 flex items-center justify-between border-b text-xs font-semibold ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-blue-400' : 'bg-[#EFECE6] border-[#D5D1C6] text-blue-700'}`}>
-                <div className="flex items-center gap-3">
-                  <span className="flex items-center gap-1.5 font-bold text-sm"><BookOpen size={16} /> {currentBookName} {currentChapter}</span>
-                  <span className="opacity-40">|</span>
-                  <span className="px-2 py-0.5 rounded font-bold uppercase bg-blue-500/20 text-blue-600 dark:text-blue-400 text-[11px]">{bibleVersion}</span>
+            <div className={`h-1/2 border-b flex flex-col relative ${isDarkMode ? 'bg-[#0F111A] border-[#2A2E3E]' : 'bg-[#F8F6F0] border-[#D5D1C6]'}`}>
+              {/* Header Navegador Bíblico Directo e Intuitivo */}
+              <div className={`p-2 px-4 flex flex-wrap items-center justify-between gap-3 border-b text-xs select-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-[#EFECE6] border-[#D5D1C6] text-gray-900'}`}>
+                
+                {/* Filtros Separados Fijos (Versión, Libro, Capítulo, Versículo) */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-bold flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+                    <BookOpen size={16} /> Biblia:
+                  </span>
+
+                  {/* 1. Versión */}
+                  <select 
+                    value={bibleVersion}
+                    onChange={(e) => setBibleVersion(e.target.value)}
+                    className={`border rounded px-2 py-1 font-bold text-xs focus:outline-none ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-blue-400' : 'bg-white border-[#D5D1C6] text-blue-700'}`}
+                    title="Seleccionar Versión Bíblica"
+                  >
+                    <option value="RVR1960">RVR1960</option>
+                    <option value="NVI">NVI</option>
+                    <option value="TLA">TLA</option>
+                  </select>
+
+                  {/* 2. Libro (66 Libros) */}
+                  <select 
+                    value={currentBook}
+                    onChange={(e) => { 
+                      setCurrentBook(parseInt(e.target.value)); 
+                      setCurrentChapter(1); 
+                      setCurrentVerseFilter(''); 
+                    }}
+                    className={`border rounded px-2.5 py-1 font-bold text-xs focus:outline-none max-w-[150px] ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
+                    title="Seleccionar Libro"
+                  >
+                    {booksList.length > 0 ? (
+                      booksList.map(b => (
+                        <option key={b.book_number} value={b.book_number}>{b.book_name}</option>
+                      ))
+                    ) : (
+                      <>
+                        <option value={1}>Génesis</option>
+                        <option value={19}>Salmos</option>
+                        <option value={40}>Mateo</option>
+                        <option value={43}>Juan</option>
+                        <option value={45}>Romanos</option>
+                        <option value={66}>Apocalipsis</option>
+                      </>
+                    )}
+                  </select>
+
+                  {/* 3. Capítulo con Botones - y + */}
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => { setCurrentChapter(prev => Math.max(1, prev - 1)); setCurrentVerseFilter(''); }}
+                      className={`border px-2 py-0.5 rounded font-bold ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white hover:bg-gray-800' : 'bg-white border-[#D5D1C6] text-gray-900 hover:bg-gray-100'}`}
+                      title="Capítulo anterior"
+                    >-</button>
+                    <select 
+                      value={currentChapter}
+                      onChange={(e) => { setCurrentChapter(parseInt(e.target.value)); setCurrentVerseFilter(''); }}
+                      className={`border rounded px-2 py-1 font-bold text-xs focus:outline-none text-center ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
+                      title="Seleccionar Capítulo"
+                    >
+                      {(chaptersList.length > 0 ? chaptersList : Array.from({ length: 50 }, (_, i) => i + 1)).map(ch => (
+                        <option key={ch} value={ch}>Cap. {ch}</option>
+                      ))}
+                    </select>
+                    <button 
+                      onClick={() => { setCurrentChapter(prev => prev + 1); setCurrentVerseFilter(''); }}
+                      className={`border px-2 py-0.5 rounded font-bold ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white hover:bg-gray-800' : 'bg-white border-[#D5D1C6] text-gray-900 hover:bg-gray-100'}`}
+                      title="Capítulo siguiente"
+                    >+</button>
+                  </div>
+
+                  {/* 4. Versículo Especifico (Opcional) */}
+                  <select 
+                    value={currentVerseFilter}
+                    onChange={(e) => setCurrentVerseFilter(e.target.value)}
+                    className={`border rounded px-2 py-1 text-xs focus:outline-none ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
+                    title="Resaltar Versículo Especifico"
+                  >
+                    <option value="">Todo el capítulo</option>
+                    {Array.from({ length: verses.length || 50 }, (_, i) => i + 1).map(v => (
+                      <option key={v} value={v}>Versículo {v}</option>
+                    ))}
+                  </select>
+
                   {currentVerseFilter && (
-                    <span className="flex items-center gap-1.5 px-2 py-0.5 rounded font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px]">
-                      🎯 Resaltando Versículo {currentVerseFilter}
-                      <button 
-                        onClick={() => setCurrentVerseFilter('')}
-                        className="hover:text-red-500 font-bold ml-1"
-                        title="Quitar resalte"
-                      >✕</button>
-                    </span>
+                    <button 
+                      onClick={() => setCurrentVerseFilter('')}
+                      className="text-amber-500 hover:text-red-500 font-bold text-xs flex items-center gap-1 bg-amber-500/10 px-2 py-0.5 rounded"
+                      title="Quitar resalte"
+                    >
+                      🎯 Ver todo ✕
+                    </button>
                   )}
                 </div>
-                <div className="flex items-center gap-3 text-[11px]">
-                  <span className="text-[10px] opacity-75">Capítulo completo en pantalla • Haz clic en un versículo para insertarlo</span>
-                </div>
+
+                {/* Formulario de Búsqueda por Palabra al lado */}
+                <form onSubmit={handleBibleSearch} className="flex items-center gap-1.5 flex-1 min-w-[240px] justify-end">
+                  <div className="relative w-full max-w-xs">
+                    <Search size={14} className="absolute left-2.5 top-2.5 opacity-50" />
+                    <input 
+                      type="text"
+                      placeholder="Buscar por palabra (ej: fe, amor, pastor)..."
+                      value={bibleQuery}
+                      onChange={(e) => setBibleQuery(e.target.value)}
+                      className={`w-full border rounded pl-8 pr-2 py-1 text-xs focus:outline-none ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-xs font-bold shadow-sm transition-colors flex items-center gap-1"
+                  >
+                    <span>Buscar</span>
+                  </button>
+                </form>
+
               </div>
+
+              {/* Drawer de Resultados de Búsqueda por Palabra */}
+              {searchResults.length > 0 && (
+                <div className={`p-3 border-b max-h-48 overflow-y-auto z-20 shadow-lg ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-[#EFECE6] border-[#D5D1C6]'}`}>
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-gray-500/20 text-xs font-bold">
+                    <span className="text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                      🔍 Resultados para "{bibleQuery}": {searchResults.length} versículos
+                    </span>
+                    <button 
+                      onClick={() => setSearchResults([])}
+                      className="text-gray-400 hover:text-red-400 text-xs font-bold px-1.5 py-0.5 rounded bg-gray-500/10"
+                    >
+                      Cerrar resultados ✕
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                    {searchResults.map((r, i) => (
+                      <div key={i} className={`p-2 rounded border space-y-1 ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6] text-gray-900 shadow-sm'}`}>
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-blue-600 dark:text-blue-400">
+                            {r.book_name} {r.chapter}:{r.verse}
+                          </span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-blue-500/20 text-blue-600 dark:text-blue-400">
+                            {r.version || bibleVersion}
+                          </span>
+                        </div>
+                        <p className="italic opacity-90 line-clamp-2">{r.scripture}</p>
+                        <div className="flex items-center gap-2 pt-1 border-t border-gray-500/10 text-[10px]">
+                          <button 
+                            type="button"
+                            onClick={() => insertVerseToSermon(r.book_name, r.verse, r.scripture, r.version || bibleVersion)}
+                            className="text-blue-600 dark:text-blue-400 hover:underline font-bold"
+                          >
+                            + Insertar
+                          </button>
+                          <span>•</span>
+                          <button 
+                            type="button"
+                            onClick={() => { jumpToSearchResult(r); setSearchResults([]); }}
+                            className="text-emerald-600 dark:text-emerald-400 hover:underline font-bold"
+                          >
+                            📖 Ir al pasaje en contexto
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Visor de Versículos (Muestra todo el capítulo con el versículo objetivo resaltado) */}
               <div className="flex-1 p-4 overflow-y-auto space-y-2 text-sm leading-relaxed">
