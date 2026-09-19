@@ -24,9 +24,12 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $name = function_exists('fake') ? fake()->name() : 'Usuario Pastor ' . Str::random(4);
+        $email = function_exists('fake') ? fake()->unique()->safeEmail() : 'pastor_' . Str::random(6) . '@ejemplo.com';
+
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'name' => $name,
+            'email' => $email,
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
