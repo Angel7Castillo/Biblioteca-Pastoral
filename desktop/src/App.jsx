@@ -214,7 +214,7 @@ export default function App() {
 
   const insertVerseAndNoteToSermon = (bookName, verseNum, scriptureText, noteContent) => {
     if (!activeSermon) return;
-    const combinedQuote = `<blockquote class="border-l-4 border-amber-500 pl-3 my-2 italic font-serif"><strong>${bookName} ${currentChapter}:${verseNum} (${bibleVersion})</strong> - "${scriptureText}"<br/><span class="not-italic text-xs font-sans font-bold text-amber-600 dark:text-amber-400 mt-1 block">📝 Reflexión Teológica: "${noteContent}"</span></blockquote><p></p>`;
+    const combinedQuote = `<blockquote class="border-l-4 border-amber-500 pl-3 my-2 italic font-serif"><strong>${bookName} ${currentChapter}:${verseNum} (${bibleVersion})</strong> - "${scriptureText}"<br/><span class="not-italic text-xs font-sans font-bold text-amber-600 dark:text-amber-400 mt-1 block">📝 Nota sobre el pasaje: "${noteContent}"</span></blockquote><p></p>`;
     setSermonHtml(prev => prev + combinedQuote);
   };
 
@@ -998,7 +998,7 @@ export default function App() {
                           <div className={`p-3 rounded-lg border ml-6 shadow-xl space-y-2 z-10 transition-all ${isDarkMode ? 'bg-[#1A1D27] border-amber-500/40 text-white' : 'bg-amber-50 border-amber-300 text-gray-900'}`}>
                             <div className="flex items-center justify-between text-xs font-bold text-amber-500">
                               <span className="flex items-center gap-1">
-                                <StickyNote size={13} /> Nota Teológica: {currentBName} {currentChapter}:{v.verse}
+                                <StickyNote size={13} /> Nota sobre el pasaje: {currentBName} {currentChapter}:{v.verse}
                               </span>
                               <button 
                                 type="button" 
