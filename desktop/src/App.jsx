@@ -82,6 +82,15 @@ export default function App() {
     }
   }, [isDarkMode]);
 
+  // Actualizar título del documento (para pestaña del navegador e impresión)
+  useEffect(() => {
+    if (sermonTitle) {
+      document.title = `${sermonTitle} - Biblioteca Pastoral`;
+    } else {
+      document.title = 'Biblioteca Pastoral';
+    }
+  }, [sermonTitle]);
+
   // Asignar tooltips explicativos a los botones de la barra de herramientas del editor
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -320,6 +329,7 @@ export default function App() {
   // 14. Imprimir Sermón en Formato A4 / Exportar a PDF
   const handlePrintSermon = () => {
     if (!activeSermon) return;
+    document.title = sermonTitle ? `${sermonTitle} - Biblioteca Pastoral` : 'Biblioteca Pastoral';
     window.print();
   };
 
