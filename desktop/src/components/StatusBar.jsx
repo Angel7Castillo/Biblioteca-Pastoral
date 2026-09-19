@@ -1,7 +1,7 @@
 import React from 'react';
-import { Wifi, WifiOff, FileText, Clock, CheckCircle } from 'lucide-react';
+import { Wifi, WifiOff, FileText, Clock, CheckCircle, RefreshCw } from 'lucide-react';
 
-export default function StatusBar({ wordCount = 0, isOffline = false, activeSermonTitle = '', saveStatus = 'Guardado' }) {
+export default function StatusBar({ wordCount = 0, isOffline = false, activeSermonTitle = '', saveStatus = 'Guardado', onUpdateProxmox = null, isUpdating = false }) {
   // Estimar minutos de predicación basados en ~130 palabras por minuto
   const estimatedMinutes = Math.ceil(wordCount / 130);
 
@@ -40,6 +40,17 @@ export default function StatusBar({ wordCount = 0, isOffline = false, activeSerm
             <span className="flex items-center gap-1 text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded font-sans font-semibold">
               <Wifi size={12} /> Proxmox API (192.168.1.200)
             </span>
+          )}
+          {onUpdateProxmox && (
+            <button 
+              onClick={onUpdateProxmox}
+              disabled={isUpdating}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded font-sans font-bold text-xs transition-all shadow-sm ${isUpdating ? 'bg-blue-600/50 text-white cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-500 text-white hover:scale-105 active:scale-95'}`}
+              title="Sincronizar y Actualizar Servidor Proxmox en 1 Clic sin consola"
+            >
+              <RefreshCw size={11} className={isUpdating ? 'animate-spin' : ''} />
+              <span>{isUpdating ? 'Actualizando...' : '⚡ Actualizar Proxmox'}</span>
+            </button>
           )}
         </div>
       </div>

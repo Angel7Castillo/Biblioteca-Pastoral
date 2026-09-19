@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\SermonController;
 use App\Http\Controllers\Api\V1\BibleController;
+use App\Http\Controllers\Api\V1\SystemController;
 
 Route::prefix('v1')->group(function () {
     // API de Sermones y Apuntes
@@ -18,4 +19,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/biblia/{bookNumber}/capitulos', [BibleController::class, 'chapters']);
     Route::get('/biblia/{bookNumber}/{chapter}', [BibleController::class, 'verses']);
     Route::get('/biblia/buscar', [BibleController::class, 'search']);
+
+    // Mantenimiento y Auto-Despliegue del Servidor Proxmox
+    Route::get('/sistema/estado', [SystemController::class, 'status']);
+    Route::post('/sistema/actualizar', [SystemController::class, 'update']);
 });
+

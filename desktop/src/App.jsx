@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Book, Edit3, Search, Sun, Moon, LayoutPanelTop, 
-  Plus, Copy, Trash2, Play, BookOpen
+  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle
 } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -10,7 +10,7 @@ import { marked } from 'marked';
 
 import { 
   getSermons, createSermon, updateSermon, deleteSermon, duplicateSermon, 
-  getBibleVerses, searchBible, getBibleBooks, getBibleChapters
+  getBibleVerses, searchBible, getBibleBooks, getBibleChapters, updateProxmoxServer
 } from './services/api';
 import PreacherMode from './components/PreacherMode';
 import StatusBar from './components/StatusBar';
@@ -20,6 +20,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('explorer'); // 'explorer', 'bible', 'search'
   const [showBiblePanel, setShowBiblePanel] = useState(true);
   const [isPreacherMode, setIsPreacherMode] = useState(false);
+  const [isUpdatingServer, setIsUpdatingServer] = useState(false);
+  const [serverNotice, setServerNotice] = useState(null);
 
   // Estados de Sermones
   const [sermons, setSermons] = useState([]);
@@ -205,6 +207,27 @@ export default function App() {
     setShowBiblePanel(true);
   };
 
+  // 13. Auto-Despliegue y Actualización en 1 Clic del Servidor Proxmox
+  const handleUpdateProxmox = async () => {
+    setIsUpdatingServer(true);
+    setServerNotice({ type: 'info', text: 'Iniciando sincronización y actualización del servidor Proxmox...' });
+    const res = await updateProxmoxServer();
+    setIsUpdatingServer(false);
+    if (res.success) {
+      setServerNotice({ 
+        type: 'success', 
+        text: `¡Servidor Proxmox actualizado con éxito! Versión: ${res.commit}` 
+      });
+      setTimeout(() => setServerNotice(null), 8000);
+    } else {
+      setServerNotice({ 
+        type: 'error', 
+        text: `Error al actualizar: ${res.message}` 
+      });
+      setTimeout(() => setServerNotice(null), 8000);
+    }
+  };
+
   const currentBookName = booksList.find(b => b.book_number === currentBook)?.book_name || 'Juan';
 
   const quillModules = {
@@ -219,6 +242,19 @@ export default function App() {
   return (
     <div className={`flex flex-col h-screen overflow-hidden ${isDarkMode ? 'bg-[#0F111A] text-[#A6ACCD]' : 'bg-[#F8F6F0] text-[#374151]'}`}>
       
+      {/* Floating System Notice Banner */}
+      {serverNotice && (
+        <div className={`px-4 py-2 text-xs font-bold flex items-center justify-between shadow-md select-none z-50 ${serverNotice.type === 'success' ? 'bg-emerald-600 text-white' : serverNotice.type === 'error' ? 'bg-red-600 text-white' : 'bg-blue-600 text-white animate-pulse'}`}>
+          <div className="flex items-center gap-2">
+            {serverNotice.type === 'success' && <CheckCircle2 size={16} />}
+            {serverNotice.type === 'error' && <AlertCircle size={16} />}
+            {serverNotice.type === 'info' && <RefreshCw size={16} className="animate-spin" />}
+            <span>{serverNotice.text}</span>
+          </div>
+          <button onClick={() => setServerNotice(null)} className="opacity-80 hover:opacity-100 font-bold px-2">✕</button>
+        </div>
+      )}
+
       {/* Top IDE Window Bar */}
       <div className={`h-10 border-b flex items-center px-4 justify-between text-xs font-semibold select-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-[#EFECE6] border-[#D5D1C6] text-gray-900'}`}>
         <div className="flex items-center space-x-4">
@@ -229,6 +265,15 @@ export default function App() {
           <span className="hover:text-blue-500 cursor-pointer">Biblia</span>
         </div>
         <div className="flex items-center space-x-3">
+          <button 
+            onClick={handleUpdateProxmox}
+            disabled={isUpdatingServer}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm ${isUpdatingServer ? 'bg-blue-600/50 text-white cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
+            title="Sincronizar y actualizar Servidor Proxmox desde GitHub en 1 Clic"
+          >
+            <RefreshCw size={12} className={isUpdatingServer ? 'animate-spin' : ''} />
+            <span>{isUpdatingServer ? 'Actualizando Proxmox...' : '⚡ Actualizar Servidor'}</span>
+          </button>
           <button 
             onClick={() => setShowBiblePanel(!showBiblePanel)}
             className={`p-1 rounded transition-colors ${showBiblePanel ? 'bg-blue-600/20 text-blue-600 dark:text-blue-400' : 'hover:bg-gray-500/20'}`}
@@ -621,6 +666,8 @@ export default function App() {
         isOffline={isOffline}
         activeSermonTitle={sermonTitle}
         saveStatus={saveStatus}
+        onUpdateProxmox={handleUpdateProxmox}
+        isUpdating={isUpdatingServer}
       />
 
       {/* Preacher Mode Fullscreen Modal */}

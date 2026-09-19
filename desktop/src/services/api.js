@@ -174,3 +174,32 @@ export async function searchBible(query, version = '') {
   }
 }
 
+// ----------------------------------------------------
+// AUTO-DESPLIEGUE Y MANTENIMIENTO DEL SERVIDOR PROXMOX
+// ----------------------------------------------------
+export async function updateProxmoxServer() {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/sistema/actualizar`, {
+      method: 'POST'
+    }, 15000);
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    return {
+      success: false,
+      message: 'No se pudo conectar con el servidor Proxmox (' + err.message + ').'
+    };
+  }
+}
+
+export async function getSystemStatus() {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/sistema/estado`);
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    return { success: false, commit: 'Modo Offline' };
+  }
+}
+
+

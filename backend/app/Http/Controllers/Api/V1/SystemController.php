@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Process;
+
+class SystemController extends Controller
+{
+    public function update(Request $request)
+    {
+        $baseDir = base_path('..');
+        $backendDir = base_path();
+
+        // Configurar safe directory y ejecutar git fetch + reset + artisan migrate
+        $command = "cd {$baseDir} && git config --global --add safe.directory {$baseDir} 2>&1 && git fetch origin 2>&1 && git reset --hard origin/main 2>&1 && cd {$backendDir} && php artisan route:clear 2>&1 && php artisan config:clear 2>&1 && php artisan migrate --force 2>&1";
+
+        $output = shell_exec($command);
+
+        // Obtener último commit
+        $commitInfo = shell_exec("cd {$baseDir} && git log -1 --pretty=format:\"%h - %s (%cr)\" 2>&1");
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Servidor Proxmox actualizado con éxito.',
+            'commit' => $commitInfo ? trim($commitInfo) : 'Última versión instalada',
+            'log' => $output
+        ]);
+    }
+
+    public function status(Request $request)
+    {
+        $baseDir = base_path('..');
+        $commitInfo = shell_exec("cd {$baseDir} && git log -1 --pretty=format:\"%h - %s (%cr)\" 2>&1");
+
+        return response()->json([
+            'success' => true,
+            'version' => '2.0.0',
+            'commit' => $commitInfo ? trim($commitInfo) : 'Desconocido',
+            'php_version' => PHP_VERSION,
+            'os' => PHP_OS
+        ]);
+    }
+}
