@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Wifi, WifiOff, FileText, Clock, CheckCircle, RefreshCw, Info } from 'lucide-react';
+import { FileText, Clock, CheckCircle, Info, Cloud, CloudOff } from 'lucide-react';
 
 export default function StatusBar({ wordCount = 0, isOffline = false, activeSermonTitle = '', saveStatus = 'Guardado', onUpdateProxmox = null, isUpdating = false }) {
   const [showInfo, setShowInfo] = useState(false);
@@ -75,12 +75,12 @@ export default function StatusBar({ wordCount = 0, isOffline = false, activeSerm
         <div className="w-px h-3 bg-[#2A2E3E]"></div>
         <div className="flex items-center gap-1.5">
           {isOffline ? (
-            <span className="flex items-center gap-1 text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded font-sans font-semibold">
-              <WifiOff size={12} /> Modo Offline
+            <span className="flex items-center gap-1 text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded font-sans font-semibold" title="Sin conexión - Los sermones se guardan localmente hasta sincronizar con la web">
+              <CloudOff size={12} /> Sin sincronizar
             </span>
           ) : (
-            <span className="flex items-center gap-1 text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded font-sans font-semibold">
-              <Wifi size={12} /> Proxmox API (192.168.1.200)
+            <span className="flex items-center gap-1 text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded font-sans font-semibold" title="Sincronizado correctamente con la versión web y la nube">
+              <Cloud size={12} /> Sincronizado
             </span>
           )}
         </div>
