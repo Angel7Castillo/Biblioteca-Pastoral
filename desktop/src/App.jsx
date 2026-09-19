@@ -10,7 +10,7 @@ import { marked } from 'marked';
 
 import { 
   getSermons, createSermon, updateSermon, deleteSermon, duplicateSermon, 
-  getBibleVerses, searchBible 
+  getBibleVerses, searchBible, getBibleBooks, getBibleChapters
 } from './services/api';
 import PreacherMode from './components/PreacherMode';
 import StatusBar from './components/StatusBar';
@@ -38,10 +38,16 @@ export default function App() {
 
   // Estados de Biblia Multiversión (RVR1960, NVI, TLA)
   const [bibleVersion, setBibleVersion] = useState('RVR1960');
-  const [currentBook, setCurrentBook] = useState(43); // 43 = Juan, 1 = Génesis, 45 = Romanos, 19 = Salmos
+  const [currentBook, setCurrentBook] = useState(43); // 43 = Juan
   const [currentChapter, setCurrentChapter] = useState(3);
+  const [currentVerseFilter, setCurrentVerseFilter] = useState('');
+  const [booksList, setBooksList] = useState([]);
+  const [chaptersList, setChaptersList] = useState([]);
   const [verses, setVerses] = useState([]);
+
+  // Estados de Búsqueda
   const [bibleQuery, setBibleQuery] = useState('');
+  const [searchVersionFilter, setSearchVersionFilter] = useState('');
   const [searchResults, setSearchResults] = useState([]);
 
   // Aplicar clase .light al elemento raíz
@@ -53,7 +59,25 @@ export default function App() {
     }
   }, [isDarkMode]);
 
-  // 1. Cargar Sermones de la API / Cache
+  // 1. Cargar Lista de Libros al cambiar de versión
+  useEffect(() => {
+    const fetchBooks = async () => {
+      const list = await getBibleBooks(bibleVersion);
+      setBooksList(list);
+    };
+    fetchBooks();
+  }, [bibleVersion]);
+
+  // 2. Cargar Lista de Capítulos al cambiar de libro
+  useEffect(() => {
+    const fetchChapters = async () => {
+      const list = await getBibleChapters(currentBook, bibleVersion);
+      setChaptersList(list);
+    };
+    fetchChapters();
+  }, [currentBook, bibleVersion]);
+
+  // 3. Cargar Sermones de la API / Cache
   const loadSermons = async () => {
     const res = await getSermons();
     setSermons(res.data);
@@ -67,7 +91,7 @@ export default function App() {
     loadSermons();
   }, []);
 
-  // 2. Seleccionar Sermón
+  // 4. Seleccionar Sermón
   const selectSermon = (sermon) => {
     setActiveSermon(sermon);
     setSermonTitle(sermon.title || '');
@@ -78,7 +102,7 @@ export default function App() {
     setSermonPassage(sermon.main_passage || '');
   };
 
-  // 3. Autoguardado con Debounce (1 segundo)
+  // 5. Autoguardado con Debounce (1 segundo)
   useEffect(() => {
     if (!activeSermon) return;
 
@@ -110,16 +134,16 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [sermonHtml, sermonTitle, sermonStatus, sermonDate, sermonLocation, sermonPassage, activeSermon]);
 
-  // 4. Cargar Versículos Bíblicos según Versión, Libro y Capítulo
+  // 6. Cargar Versículos Bíblicos según Versión, Libro, Capítulo y Versículo opcional
   useEffect(() => {
     const fetchVerses = async () => {
-      const res = await getBibleVerses(currentBook, currentChapter, bibleVersion);
+      const res = await getBibleVerses(currentBook, currentChapter, bibleVersion, currentVerseFilter);
       setVerses(res.data);
     };
     fetchVerses();
-  }, [currentBook, currentChapter, bibleVersion]);
+  }, [currentBook, currentChapter, bibleVersion, currentVerseFilter]);
 
-  // 5. Crear Nuevo Sermón
+  // 7. Crear Nuevo Sermón
   const handleCreateSermon = async () => {
     const name = prompt("Título del nuevo sermón / apunte:");
     if (!name) return;
@@ -133,7 +157,7 @@ export default function App() {
     selectSermon(newSermon);
   };
 
-  // 6. Duplicar / Reutilizar Sermón
+  // 8. Duplicar / Reutilizar Sermón
   const handleDuplicateSermon = async () => {
     if (!activeSermon) return;
     const cloned = await duplicateSermon(activeSermon.id);
@@ -143,7 +167,7 @@ export default function App() {
     }
   };
 
-  // 7. Eliminar Sermón
+  // 9. Eliminar Sermón
   const handleDeleteSermon = async (e, id) => {
     e.stopPropagation();
     if (!window.confirm("¿Eliminar este sermón permanentemente?")) return;
@@ -155,20 +179,33 @@ export default function App() {
     }
   };
 
-  // 8. Inserción de Versículo en 1 Clic (Incluyendo la versión elegida)
-  const insertVerseToSermon = (bookName, verseNum, text) => {
+  // 10. Inserción de Versículo en 1 Clic (Incluyendo la versión elegida)
+  const insertVerseToSermon = (bookName, verseNum, text, verName = bibleVersion) => {
     if (!activeSermon) return;
-    const verseQuote = `<blockquote class="border-l-4 border-blue-500 pl-3 my-2 italic font-serif"><strong>${bookName} ${currentChapter}:${verseNum} (${bibleVersion})</strong> - "${text}"</blockquote><p></p>`;
+    const verseQuote = `<blockquote class="border-l-4 border-blue-500 pl-3 my-2 italic font-serif"><strong>${bookName} ${currentChapter}:${verseNum} (${verName})</strong> - "${text}"</blockquote><p></p>`;
     setSermonHtml(prev => prev + verseQuote);
   };
 
-  // 9. Búsqueda Bíblica
+  // 11. Búsqueda Bíblica (por palabra o referencia "Juan 3:16")
   const handleBibleSearch = async (e) => {
     e.preventDefault();
     if (!bibleQuery) return;
-    const res = await searchBible(bibleQuery, bibleVersion);
+    const res = await searchBible(bibleQuery, searchVersionFilter);
     setSearchResults(res);
   };
+
+  // 12. Ir directamente a un pasaje desde los resultados de búsqueda
+  const jumpToSearchResult = (result) => {
+    if (result.version) {
+      setBibleVersion(result.version);
+    }
+    setCurrentBook(result.book_number);
+    setCurrentChapter(result.chapter);
+    setCurrentVerseFilter(result.verse);
+    setShowBiblePanel(true);
+  };
+
+  const currentBookName = booksList.find(b => b.book_number === currentBook)?.book_name || 'Juan';
 
   const quillModules = {
     toolbar: [
@@ -226,14 +263,14 @@ export default function App() {
           <button 
             onClick={() => setActiveTab('bible')}
             className={`p-2 rounded-lg transition-colors ${activeTab === 'bible' ? 'bg-blue-600/20 text-blue-600 dark:text-blue-400 font-bold' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-            title="Librería Bíblica"
+            title="Navegador Bíblico por Libro y Capítulo"
           >
             <Book size={22} />
           </button>
           <button 
             onClick={() => setActiveTab('search')}
             className={`p-2 rounded-lg transition-colors ${activeTab === 'search' ? 'bg-blue-600/20 text-blue-600 dark:text-blue-400 font-bold' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-            title="Buscador Bíblico"
+            title="Buscador por Palabra o Cita"
           >
             <Search size={22} />
           </button>
@@ -264,7 +301,7 @@ export default function App() {
             )}
           </div>
 
-          <div className="p-3 flex-1 overflow-y-auto space-y-2">
+          <div className="p-3 flex-1 overflow-y-auto space-y-3">
             {activeTab === 'explorer' && (
               sermons.map(s => (
                 <div 
@@ -294,7 +331,7 @@ export default function App() {
 
             {activeTab === 'bible' && (
               <div className="text-xs space-y-3">
-                {/* Selector de Versión Bíblica (RVR1960, NVI, TLA) */}
+                {/* 1. Selector de Versión Bíblica */}
                 <div className="flex flex-col gap-1">
                   <label className={`font-bold uppercase text-[10px] ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}>Versión Bíblica:</label>
                   <select 
@@ -304,53 +341,147 @@ export default function App() {
                   >
                     <option value="RVR1960">Reina Valera 1960 (RVR1960)</option>
                     <option value="NVI">Nueva Versión Internacional (NVI)</option>
-                    <option value="TLA">Lenguaje Actual (TLA)</option>
+                    <option value="TLA">Traducción Lenguaje Actual (TLA)</option>
                   </select>
                 </div>
 
+                {/* 2. Selector Dinámico de Libro (66 Libros) */}
                 <div className="flex flex-col gap-1">
-                  <label className={`font-bold uppercase text-[10px] ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}>Libro:</label>
+                  <label className={`font-bold uppercase text-[10px] ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}>Libro Bíblico:</label>
                   <select 
                     value={currentBook}
-                    onChange={(e) => { setCurrentBook(parseInt(e.target.value)); setCurrentChapter(1); }}
+                    onChange={(e) => { 
+                      setCurrentBook(parseInt(e.target.value)); 
+                      setCurrentChapter(1); 
+                      setCurrentVerseFilter(''); 
+                    }}
                     className={`border rounded p-1.5 focus:outline-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
                   >
-                    <option value={1}>Génesis</option>
-                    <option value={19}>Salmos</option>
-                    <option value={43}>Juan</option>
-                    <option value={45}>Romanos</option>
+                    {booksList.length > 0 ? (
+                      booksList.map(b => (
+                        <option key={b.book_number} value={b.book_number}>{b.book_name}</option>
+                      ))
+                    ) : (
+                      <>
+                        <option value={1}>Génesis</option>
+                        <option value={19}>Salmos</option>
+                        <option value={40}>Mateo</option>
+                        <option value={43}>Juan</option>
+                        <option value={45}>Romanos</option>
+                        <option value={66}>Apocalipsis</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
+                {/* 3. Selector Dinámico de Capítulo */}
                 <div className="flex flex-col gap-1">
                   <label className={`font-bold uppercase text-[10px] ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}>Capítulo:</label>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => setCurrentChapter(prev => Math.max(1, prev - 1))} className={`border px-2.5 py-1 rounded font-bold ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}>-</button>
-                    <span className={`font-bold text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{currentChapter}</span>
-                    <button onClick={() => setCurrentChapter(prev => prev + 1)} className={`border px-2.5 py-1 rounded font-bold ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}>+</button>
+                    <button 
+                      onClick={() => { setCurrentChapter(prev => Math.max(1, prev - 1)); setCurrentVerseFilter(''); }}
+                      className={`border px-2.5 py-1 rounded font-bold ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white hover:bg-gray-800' : 'bg-white border-[#D5D1C6] text-gray-900 hover:bg-gray-100'}`}
+                    >-</button>
+                    <select 
+                      value={currentChapter}
+                      onChange={(e) => { setCurrentChapter(parseInt(e.target.value)); setCurrentVerseFilter(''); }}
+                      className={`flex-1 border rounded p-1 font-bold text-center ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
+                    >
+                      {(chaptersList.length > 0 ? chaptersList : Array.from({ length: 50 }, (_, i) => i + 1)).map(ch => (
+                        <option key={ch} value={ch}>Capítulo {ch}</option>
+                      ))}
+                    </select>
+                    <button 
+                      onClick={() => { setCurrentChapter(prev => prev + 1); setCurrentVerseFilter(''); }}
+                      className={`border px-2.5 py-1 rounded font-bold ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white hover:bg-gray-800' : 'bg-white border-[#D5D1C6] text-gray-900 hover:bg-gray-100'}`}
+                    >+</button>
                   </div>
+                </div>
+
+                {/* 4. Selector Opcional de Versículo Directo */}
+                <div className="flex flex-col gap-1">
+                  <label className={`font-bold uppercase text-[10px] ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}>Versículo Especifico (Opcional):</label>
+                  <select 
+                    value={currentVerseFilter}
+                    onChange={(e) => setCurrentVerseFilter(e.target.value)}
+                    className={`border rounded p-1.5 focus:outline-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
+                  >
+                    <option value="">Todos los versículos del capítulo</option>
+                    {Array.from({ length: 176 }, (_, i) => i + 1).map(v => (
+                      <option key={v} value={v}>Versículo {v}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             )}
 
             {activeTab === 'search' && (
               <form onSubmit={handleBibleSearch} className="space-y-3">
-                <input 
-                  type="text"
-                  placeholder="Buscar versículo o palabra (ej: fe)..."
-                  value={bibleQuery}
-                  onChange={(e) => setBibleQuery(e.target.value)}
-                  className={`w-full border rounded p-2 text-xs focus:outline-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
-                />
-                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white py-1.5 rounded text-xs font-bold">
-                  Buscar en {bibleVersion}
+                <div className="flex flex-col gap-1">
+                  <label className={`font-bold uppercase text-[10px] ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}>Filtrar por Versión:</label>
+                  <select 
+                    value={searchVersionFilter}
+                    onChange={(e) => setSearchVersionFilter(e.target.value)}
+                    className={`border rounded p-1.5 text-xs focus:outline-none font-semibold ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-blue-400' : 'bg-white border-[#D5D1C6] text-blue-700'}`}
+                  >
+                    <option value="">Todas las Versiones (RVR, NVI, TLA)</option>
+                    <option value="RVR1960">Reina Valera 1960 (RVR1960)</option>
+                    <option value="NVI">Nueva Versión Internacional (NVI)</option>
+                    <option value="TLA">Lenguaje Actual (TLA)</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className={`font-bold uppercase text-[10px] ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}>Buscar Palabra o Cita:</label>
+                  <input 
+                    type="text"
+                    placeholder="Ej: fe, amor, o cita: Juan 3:16..."
+                    value={bibleQuery}
+                    onChange={(e) => setBibleQuery(e.target.value)}
+                    className={`w-full border rounded p-2 text-xs focus:outline-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
+                  />
+                </div>
+
+                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white py-1.5 rounded text-xs font-bold shadow-sm transition-colors">
+                  🔍 Buscar Versículos
                 </button>
 
-                <div className="space-y-2 mt-3">
+                {searchResults.length > 0 && (
+                  <p className="text-[10px] opacity-75 font-semibold text-center">
+                    {searchResults.length} versículos encontrados
+                  </p>
+                )}
+
+                <div className="space-y-2 mt-2 max-h-[350px] overflow-y-auto pr-1">
                   {searchResults.map((r, i) => (
-                    <div key={i} className={`p-2 rounded border text-xs space-y-1 ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6] text-gray-900'}`}>
-                      <span className="font-bold text-blue-600 dark:text-blue-400">{r.book_name} {r.chapter}:{r.verse} ({r.version || bibleVersion})</span>
-                      <p className="italic opacity-85">{r.scripture}</p>
+                    <div key={i} className={`p-2.5 rounded border text-xs space-y-1.5 ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6] text-gray-900 shadow-sm'}`}>
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-blue-600 dark:text-blue-400">
+                          {r.book_name} {r.chapter}:{r.verse}
+                        </span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-blue-500/20 text-blue-600 dark:text-blue-400">
+                          {r.version || searchVersionFilter || 'RVR1960'}
+                        </span>
+                      </div>
+                      <p className="italic opacity-90 leading-relaxed">{r.scripture}</p>
+
+                      <div className="flex items-center gap-2 pt-1 border-t border-gray-500/10 text-[10px]">
+                        <button 
+                          type="button"
+                          onClick={() => insertVerseToSermon(r.book_name, r.verse, r.scripture, r.version || bibleVersion)}
+                          className="text-blue-600 dark:text-blue-400 hover:underline font-bold"
+                        >
+                          + Insertar
+                        </button>
+                        <span>•</span>
+                        <button 
+                          type="button"
+                          onClick={() => jumpToSearchResult(r)}
+                          className="text-green-600 dark:text-green-400 hover:underline font-semibold"
+                        >
+                          📖 Ir al pasaje
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -365,28 +496,45 @@ export default function App() {
           {/* Split 1: Visor Bíblico Multiversión (Top Split) */}
           {showBiblePanel && (
             <div className={`h-1/2 border-b flex flex-col ${isDarkMode ? 'bg-[#0F111A] border-[#2A2E3E]' : 'bg-[#F8F6F0] border-[#D5D1C6]'}`}>
-              <div className={`h-8 px-4 flex items-center justify-between border-b text-xs font-semibold ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-blue-400' : 'bg-[#EFECE6] border-[#D5D1C6] text-blue-700'}`}>
-                <span className="flex items-center gap-1.5"><BookOpen size={14} /> Biblia Versión: <strong>{bibleVersion}</strong></span>
-                <span className="text-[10px] opacity-75">Haz clic en un versículo para insertarlo en el sermón</span>
+              {/* Header Navegador Bíblico Directo */}
+              <div className={`h-10 px-4 flex items-center justify-between border-b text-xs font-semibold ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-blue-400' : 'bg-[#EFECE6] border-[#D5D1C6] text-blue-700'}`}>
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1.5 font-bold"><BookOpen size={14} /> {currentBookName} {currentChapter}{currentVerseFilter ? `:${currentVerseFilter}` : ''}</span>
+                  <span className="opacity-40">|</span>
+                  <span className="px-2 py-0.5 rounded font-bold uppercase bg-blue-500/20 text-blue-600 dark:text-blue-400 text-[11px]">{bibleVersion}</span>
+                </div>
+                <div className="flex items-center gap-3 text-[11px]">
+                  {currentVerseFilter && (
+                    <button 
+                      onClick={() => setCurrentVerseFilter('')}
+                      className="text-blue-500 hover:underline font-semibold"
+                    >
+                      Ver capítulo entero
+                    </button>
+                  )}
+                  <span className="text-[10px] opacity-75">Haz clic en cualquier versículo para insertarlo en tu sermón</span>
+                </div>
               </div>
+
+              {/* Visor de Versículos */}
               <div className="flex-1 p-4 overflow-y-auto space-y-2 text-sm leading-relaxed">
                 {verses.length > 0 ? (
                   verses.map(v => (
                     <p 
                       key={v.id || v.verse}
-                      onClick={() => insertVerseToSermon(v.book_name || 'Juan', v.verse, v.scripture)}
-                      className={`p-1.5 rounded cursor-pointer transition-colors group flex items-start gap-2 ${isDarkMode ? 'hover:bg-blue-500/10 text-gray-200' : 'hover:bg-blue-600/10 text-gray-900'}`}
-                      title="Haz clic para insertar en el sermón"
+                      onClick={() => insertVerseToSermon(v.book_name || currentBookName, v.verse, v.scripture)}
+                      className={`p-2 rounded cursor-pointer transition-colors group flex items-start gap-2 border ${currentVerseFilter && parseInt(currentVerseFilter) === v.verse ? (isDarkMode ? 'bg-blue-600/20 border-blue-500 text-white font-medium' : 'bg-blue-100 border-blue-500 text-gray-900 font-medium') : (isDarkMode ? 'border-transparent hover:bg-blue-500/10 text-gray-200' : 'border-transparent hover:bg-blue-600/10 text-gray-900')}`}
+                      title="Haz clic para insertar este versículo en tu sermón"
                     >
-                      <sup className="text-blue-600 dark:text-blue-400 font-bold mt-1 select-none">{v.verse}</sup>
+                      <sup className="text-blue-600 dark:text-blue-400 font-bold mt-1 select-none text-xs">{v.verse}</sup>
                       <span className="flex-1">{v.scripture}</span>
-                      <span className="opacity-0 group-hover:opacity-100 text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-bold">
+                      <span className="opacity-0 group-hover:opacity-100 text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded font-bold shadow-sm">
                         + Insertar ({bibleVersion})
                       </span>
                     </p>
                   ))
                 ) : (
-                  <p className="opacity-50 italic text-xs">Cargando versículos de la versión {bibleVersion}...</p>
+                  <p className="opacity-50 italic text-xs">Cargando versículos de {currentBookName} {currentChapter} ({bibleVersion})...</p>
                 )}
               </div>
             </div>

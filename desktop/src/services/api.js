@@ -118,9 +118,38 @@ export async function duplicateSermon(id) {
 // ----------------------------------------------------
 // API BIBLIA MULTIVERSIÓN (RVR1960, NVI, TLA)
 // ----------------------------------------------------
-export async function getBibleVerses(bookNumber = 1, chapter = 1, version = 'RVR1960') {
+export async function getBibleBooks(version = 'RVR1960') {
   try {
-    const res = await fetchWithTimeout(`${API_BASE_URL}/biblia/${bookNumber}/${chapter}?version=${version}`);
+    const res = await fetchWithTimeout(`${API_BASE_URL}/biblia/libros?version=${version}`);
+    const data = await res.json();
+    return data.data || [];
+  } catch (err) {
+    return [
+      { book_number: 1, book_name: 'Génesis' },
+      { book_number: 2, book_name: 'Éxodo' },
+      { book_number: 19, book_name: 'Salmos' },
+      { book_number: 40, book_name: 'Mateo' },
+      { book_number: 43, book_name: 'Juan' },
+      { book_number: 45, book_name: 'Romanos' },
+      { book_number: 66, book_name: 'Apocalipsis' }
+    ];
+  }
+}
+
+export async function getBibleChapters(bookNumber = 1, version = 'RVR1960') {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/biblia/${bookNumber}/capitulos?version=${version}`);
+    const data = await res.json();
+    return data.data || [];
+  } catch (err) {
+    return Array.from({ length: 50 }, (_, i) => i + 1);
+  }
+}
+
+export async function getBibleVerses(bookNumber = 1, chapter = 1, version = 'RVR1960', verse = null) {
+  try {
+    const verseParam = verse ? `&verse=${verse}` : '';
+    const res = await fetchWithTimeout(`${API_BASE_URL}/biblia/${bookNumber}/${chapter}?version=${version}${verseParam}`);
     const data = await res.json();
     return { data: data.data || [], isOffline: false };
   } catch (err) {
@@ -144,3 +173,4 @@ export async function searchBible(query, version = '') {
     return [];
   }
 }
+

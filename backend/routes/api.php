@@ -15,6 +15,7 @@ Route::prefix('v1')->group(function () {
 
     // API de Biblia
     Route::get('/biblia/libros', [BibleController::class, 'books']);
+    Route::get('/biblia/{bookNumber}/capitulos', [BibleController::class, 'chapters']);
     Route::get('/biblia/{bookNumber}/{chapter}', [BibleController::class, 'verses']);
     Route::get('/biblia/buscar', [BibleController::class, 'search']);
 });
