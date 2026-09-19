@@ -34,7 +34,11 @@ foreach ($versions as $verName => $url) {
         $bookName = trim($book['name']);
         
         foreach ($book['chapters'] as $chIdx => $chapter) {
-            $chapterNum = isset($chapter['current']) ? (int)$chapter['current'] : ($chIdx + 1);
+            if (isset($chapter['current']['usfm']) && preg_match('/\.([0-9]+)$/', $chapter['current']['usfm'], $m)) {
+                $chapterNum = (int)$m[1];
+            } else {
+                $chapterNum = $chIdx + 1;
+            }
             
             if (!isset($chapter['items']) || !is_array($chapter['items'])) {
                 continue;

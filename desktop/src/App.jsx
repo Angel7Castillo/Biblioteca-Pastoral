@@ -312,24 +312,10 @@ export default function App() {
         <div className={`w-14 flex flex-col items-center py-4 border-r space-y-6 ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-[#E4E1D8] border-[#D5D1C6]'}`}>
           <button 
             onClick={() => setActiveTab('explorer')}
-            className={`p-2 rounded-lg transition-colors ${activeTab === 'explorer' ? 'bg-blue-600/20 text-blue-600 dark:text-blue-400 font-bold' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-            title="Explorador de Sermones"
+            className={`p-2 rounded-lg transition-colors bg-blue-600/20 text-blue-600 dark:text-blue-400 font-bold`}
+            title="Mis Sermones y Apuntes"
           >
             <Edit3 size={22} />
-          </button>
-          <button 
-            onClick={() => setActiveTab('bible')}
-            className={`p-2 rounded-lg transition-colors ${activeTab === 'bible' ? 'bg-blue-600/20 text-blue-600 dark:text-blue-400 font-bold' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-            title="Navegador Bíblico por Libro y Capítulo"
-          >
-            <Book size={22} />
-          </button>
-          <button 
-            onClick={() => setActiveTab('search')}
-            className={`p-2 rounded-lg transition-colors ${activeTab === 'search' ? 'bg-blue-600/20 text-blue-600 dark:text-blue-400 font-bold' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-            title="Buscador por Palabra o Cita"
-          >
-            <Search size={22} />
           </button>
 
           <div className="flex-1"></div>
@@ -343,207 +329,44 @@ export default function App() {
           </button>
         </div>
 
-        {/* Primary Side Panel */}
+        {/* Primary Side Panel (Sermones y Apuntes) */}
         <div className={`w-64 border-r flex flex-col ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-[#EFECE6] border-[#D5D1C6]'}`}>
           <div className={`h-10 px-4 flex items-center justify-between border-b text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'border-[#2A2E3E] text-gray-400' : 'border-[#D5D1C6] text-gray-700'}`}>
-            <span>{activeTab === 'explorer' ? 'Sermones y Apuntes' : activeTab === 'bible' ? 'Librería Bíblica' : 'Buscador'}</span>
-            {activeTab === 'explorer' && (
-              <button 
-                onClick={handleCreateSermon}
-                className="bg-blue-600 hover:bg-blue-500 text-white p-1 rounded transition-colors"
-                title="Nuevo Sermón"
-              >
-                <Plus size={14} />
-              </button>
-            )}
+            <span>Sermones y Apuntes</span>
+            <button 
+              onClick={handleCreateSermon}
+              className="bg-blue-600 hover:bg-blue-500 text-white p-1 rounded transition-colors"
+              title="Nuevo Sermón"
+            >
+              <Plus size={14} />
+            </button>
           </div>
 
-          <div className="p-3 flex-1 overflow-y-auto space-y-3">
-            {activeTab === 'explorer' && (
-              sermons.map(s => (
-                <div 
-                  key={s.id}
-                  onClick={() => selectSermon(s)}
-                  className={`group p-2.5 rounded-lg cursor-pointer transition-all flex flex-col gap-1 border ${activeSermon?.id === s.id ? (isDarkMode ? 'bg-[#202433] border-blue-500/50 text-white' : 'bg-white border-blue-500 text-gray-900 shadow-sm') : (isDarkMode ? 'border-transparent hover:bg-gray-800/30 text-gray-300' : 'border-transparent hover:bg-gray-300/40 text-gray-800')}`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-sm truncate">{s.title}</span>
-                    <button 
-                      onClick={(e) => handleDeleteSermon(e, s.id)}
-                      className="text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Eliminar"
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px]">
-                    <span className={`px-1.5 py-0.5 rounded font-bold uppercase ${s.status === 'borrador' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : s.status === 'listo' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-green-500/20 text-green-600 dark:text-green-400'}`}>
-                      {s.status}
-                    </span>
-                    {s.main_passage && <span className="truncate opacity-75">{s.main_passage}</span>}
-                  </div>
-                </div>
-              ))
-            )}
-
-            {activeTab === 'bible' && (
-              <div className="text-xs space-y-3">
-                {/* 1. Selector de Versión Bíblica */}
-                <div className="flex flex-col gap-1">
-                  <label className={`font-bold uppercase text-[10px] ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}>Versión Bíblica:</label>
-                  <select 
-                    value={bibleVersion}
-                    onChange={(e) => setBibleVersion(e.target.value)}
-                    className={`border rounded p-1.5 focus:outline-none font-bold ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-blue-400' : 'bg-white border-[#D5D1C6] text-blue-700'}`}
+          <div className="p-3 flex-1 overflow-y-auto space-y-2">
+            {sermons.map(s => (
+              <div 
+                key={s.id}
+                onClick={() => selectSermon(s)}
+                className={`group p-2.5 rounded-lg cursor-pointer transition-all flex flex-col gap-1 border ${activeSermon?.id === s.id ? (isDarkMode ? 'bg-[#202433] border-blue-500/50 text-white' : 'bg-white border-blue-500 text-gray-900 shadow-sm') : (isDarkMode ? 'border-transparent hover:bg-gray-800/30 text-gray-300' : 'border-transparent hover:bg-gray-300/40 text-gray-800')}`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-sm truncate">{s.title}</span>
+                  <button 
+                    onClick={(e) => handleDeleteSermon(e, s.id)}
+                    className="text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Eliminar"
                   >
-                    <option value="RVR1960">Reina Valera 1960 (RVR1960)</option>
-                    <option value="NVI">Nueva Versión Internacional (NVI)</option>
-                    <option value="TLA">Traducción Lenguaje Actual (TLA)</option>
-                  </select>
+                    <Trash2 size={12} />
+                  </button>
                 </div>
-
-                {/* 2. Selector Dinámico de Libro (66 Libros) */}
-                <div className="flex flex-col gap-1">
-                  <label className={`font-bold uppercase text-[10px] ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}>Libro Bíblico:</label>
-                  <select 
-                    value={currentBook}
-                    onChange={(e) => { 
-                      setCurrentBook(parseInt(e.target.value)); 
-                      setCurrentChapter(1); 
-                      setCurrentVerseFilter(''); 
-                    }}
-                    className={`border rounded p-1.5 focus:outline-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
-                  >
-                    {booksList.length > 0 ? (
-                      booksList.map(b => (
-                        <option key={b.book_number} value={b.book_number}>{b.book_name}</option>
-                      ))
-                    ) : (
-                      <>
-                        <option value={1}>Génesis</option>
-                        <option value={19}>Salmos</option>
-                        <option value={40}>Mateo</option>
-                        <option value={43}>Juan</option>
-                        <option value={45}>Romanos</option>
-                        <option value={66}>Apocalipsis</option>
-                      </>
-                    )}
-                  </select>
-                </div>
-
-                {/* 3. Selector Dinámico de Capítulo */}
-                <div className="flex flex-col gap-1">
-                  <label className={`font-bold uppercase text-[10px] ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}>Capítulo:</label>
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => { setCurrentChapter(prev => Math.max(1, prev - 1)); setCurrentVerseFilter(''); }}
-                      className={`border px-2.5 py-1 rounded font-bold ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white hover:bg-gray-800' : 'bg-white border-[#D5D1C6] text-gray-900 hover:bg-gray-100'}`}
-                    >-</button>
-                    <select 
-                      value={currentChapter}
-                      onChange={(e) => { setCurrentChapter(parseInt(e.target.value)); setCurrentVerseFilter(''); }}
-                      className={`flex-1 border rounded p-1 font-bold text-center ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
-                    >
-                      {(chaptersList.length > 0 ? chaptersList : Array.from({ length: 50 }, (_, i) => i + 1)).map(ch => (
-                        <option key={ch} value={ch}>Capítulo {ch}</option>
-                      ))}
-                    </select>
-                    <button 
-                      onClick={() => { setCurrentChapter(prev => prev + 1); setCurrentVerseFilter(''); }}
-                      className={`border px-2.5 py-1 rounded font-bold ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white hover:bg-gray-800' : 'bg-white border-[#D5D1C6] text-gray-900 hover:bg-gray-100'}`}
-                    >+</button>
-                  </div>
-                </div>
-
-                {/* 4. Selector Opcional de Versículo Directo */}
-                <div className="flex flex-col gap-1">
-                  <label className={`font-bold uppercase text-[10px] ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}>Versículo Especifico (Opcional):</label>
-                  <select 
-                    value={currentVerseFilter}
-                    onChange={(e) => setCurrentVerseFilter(e.target.value)}
-                    className={`border rounded p-1.5 focus:outline-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
-                  >
-                    <option value="">Todos los versículos del capítulo</option>
-                    {Array.from({ length: 176 }, (_, i) => i + 1).map(v => (
-                      <option key={v} value={v}>Versículo {v}</option>
-                    ))}
-                  </select>
+                <div className="flex items-center gap-2 text-[10px]">
+                  <span className={`px-1.5 py-0.5 rounded font-bold uppercase ${s.status === 'borrador' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : s.status === 'listo' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-green-500/20 text-green-600 dark:text-green-400'}`}>
+                    {s.status}
+                  </span>
+                  {s.main_passage && <span className="truncate opacity-75">{s.main_passage}</span>}
                 </div>
               </div>
-            )}
-
-            {activeTab === 'search' && (
-              <form onSubmit={handleBibleSearch} className="space-y-3">
-                <div className="flex flex-col gap-1">
-                  <label className={`font-bold uppercase text-[10px] ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}>Filtrar por Versión:</label>
-                  <select 
-                    value={searchVersionFilter}
-                    onChange={(e) => setSearchVersionFilter(e.target.value)}
-                    className={`border rounded p-1.5 text-xs focus:outline-none font-semibold ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-blue-400' : 'bg-white border-[#D5D1C6] text-blue-700'}`}
-                  >
-                    <option value="">Todas las Versiones (RVR, NVI, TLA)</option>
-                    <option value="RVR1960">Reina Valera 1960 (RVR1960)</option>
-                    <option value="NVI">Nueva Versión Internacional (NVI)</option>
-                    <option value="TLA">Lenguaje Actual (TLA)</option>
-                  </select>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className={`font-bold uppercase text-[10px] ${isDarkMode ? 'text-gray-400' : 'text-gray-700'}`}>Buscar Palabra o Cita:</label>
-                  <input 
-                    type="text"
-                    placeholder="Ej: fe, amor, o cita: Juan 3:16..."
-                    value={bibleQuery}
-                    onChange={(e) => setBibleQuery(e.target.value)}
-                    className={`w-full border rounded p-2 text-xs focus:outline-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
-                  />
-                </div>
-
-                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white py-1.5 rounded text-xs font-bold shadow-sm transition-colors">
-                  🔍 Buscar Versículos
-                </button>
-
-                {searchResults.length > 0 && (
-                  <p className="text-[10px] opacity-75 font-semibold text-center">
-                    {searchResults.length} versículos encontrados
-                  </p>
-                )}
-
-                <div className="space-y-2 mt-2 max-h-[350px] overflow-y-auto pr-1">
-                  {searchResults.map((r, i) => (
-                    <div key={i} className={`p-2.5 rounded border text-xs space-y-1.5 ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6] text-gray-900 shadow-sm'}`}>
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-blue-600 dark:text-blue-400">
-                          {r.book_name} {r.chapter}:{r.verse}
-                        </span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-blue-500/20 text-blue-600 dark:text-blue-400">
-                          {r.version || searchVersionFilter || 'RVR1960'}
-                        </span>
-                      </div>
-                      <p className="italic opacity-90 leading-relaxed">{r.scripture}</p>
-
-                      <div className="flex items-center gap-2 pt-1 border-t border-gray-500/10 text-[10px]">
-                        <button 
-                          type="button"
-                          onClick={() => insertVerseToSermon(r.book_name, r.verse, r.scripture, r.version || bibleVersion)}
-                          className="text-blue-600 dark:text-blue-400 hover:underline font-bold"
-                        >
-                          + Insertar
-                        </button>
-                        <span>•</span>
-                        <button 
-                          type="button"
-                          onClick={() => jumpToSearchResult(r)}
-                          className="text-green-600 dark:text-green-400 hover:underline font-semibold"
-                        >
-                          📖 Ir al pasaje
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </form>
-            )}
+            ))}
           </div>
         </div>
 
