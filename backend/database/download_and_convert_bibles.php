@@ -1,5 +1,7 @@
 <?php
 
+ini_set('memory_limit', '512M');
+
 $versions = [
     'RVR1960' => 'https://mrk214.github.io/snapshots/es___spa___spa/RVR1960_vid_149.json',
     'NVI'     => 'https://mrk214.github.io/snapshots/es___spa___spa/NVI_vid_128.json',
@@ -20,6 +22,7 @@ foreach ($versions as $verName => $url) {
     }
 
     $raw = json_decode($jsonContent, true);
+    unset($jsonContent);
     $normalizedVerses = [];
     $bookNum = 0;
 
@@ -69,5 +72,8 @@ foreach ($versions as $verName => $url) {
     $destPath = "{$outputDir}/{$verName}.json";
     file_put_contents($destPath, json_encode($normalizedVerses, JSON_UNESCAPED_UNICODE));
     echo "Saved {$verName}: " . count($normalizedVerses) . " verses to {$destPath}\n";
+    unset($raw);
+    unset($normalizedVerses);
+    gc_collect_cycles();
 }
 echo "Conversion complete!\n";
