@@ -270,7 +270,7 @@ export default function App() {
       {/* Top IDE Window Bar */}
       <div className={`h-10 border-b flex items-center px-4 justify-between text-xs font-semibold select-none ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E] text-white' : 'bg-[#EFECE6] border-[#D5D1C6] text-gray-900'}`}>
         <div className="flex items-center space-x-4">
-          <span className="font-bold tracking-wider text-blue-600 dark:text-blue-400">BIBLIOTECA PASTORAL v2</span>
+          <span className="font-bold tracking-wider text-blue-600 dark:text-blue-400">BIBLIOTECA PASTORAL</span>
         </div>
         <div className="flex items-center space-x-3">
           <button 
