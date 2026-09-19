@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Book, Edit3, Search, Sun, Moon, LayoutPanelTop, 
-  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle
+  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save
 } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -157,6 +157,34 @@ export default function App() {
 
     return () => clearTimeout(timer);
   }, [sermonHtml, sermonTitle, sermonStatus, sermonDate, sermonLocation, sermonPassage, activeSermon]);
+
+  // 5b. Guardar Sermón Manualmente al hacer clic en el botón Guardar
+  const handleManualSave = async () => {
+    if (!activeSermon) return;
+    setSaveStatus('Guardando...');
+    const turndownService = new TurndownService({ headingStyle: 'atx' });
+    const markdown = turndownService.turndown(sermonHtml);
+    
+    const textOnly = sermonHtml.replace(/<[^>]*>/g, ' ');
+    const words = textOnly.trim().split(/\s+/).filter(w => w.length > 0).length;
+    setWordCount(words);
+
+    const payload = {
+      title: sermonTitle,
+      content_markdown: markdown,
+      content_html: sermonHtml,
+      status: sermonStatus,
+      preach_date: sermonDate || null,
+      location: sermonLocation || null,
+      main_passage: sermonPassage || null
+    };
+
+    await updateSermon(activeSermon.id, payload);
+    setSaveStatus('¡Guardado!');
+    setTimeout(() => setSaveStatus('Guardado'), 3000);
+
+    setSermons(prev => prev.map(s => s.id === activeSermon.id ? { ...s, ...payload } : s));
+  };
 
   // 6. Cargar TODO el capítulo bíblico (para mantener el contexto completo)
   useEffect(() => {
@@ -695,6 +723,16 @@ export default function App() {
                       title="Reutilizar / Duplicar Sermón"
                     >
                       <Copy size={12} /> Reutilizar
+                    </button>
+
+                    {/* Botón Guardar (Manual & Funcional) */}
+                    <button 
+                      onClick={handleManualSave}
+                      className="flex items-center gap-1.5 px-3 py-1 rounded transition-all text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-sm hover:scale-105 active:scale-95 cursor-pointer"
+                      title="Guardar sermón ahora"
+                    >
+                      <Save size={13} />
+                      <span>Guardar</span>
                     </button>
                   </div>
                 </div>
