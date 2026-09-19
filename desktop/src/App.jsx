@@ -391,17 +391,8 @@ export default function App() {
           </button>
         </div>
 
-        {/* Right Side Header: System Updates, Theme, Bible Panel, Preacher Mode */}
+        {/* Right Side Header: View Modes, Theme, Preacher Mode, System Updates */}
         <div className="flex items-center space-x-3">
-          <button 
-            onClick={handleUpdateProxmox}
-            disabled={isUpdatingServer}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm ${isUpdatingServer ? 'bg-blue-600/50 text-white cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white hover:scale-105 active:scale-95'}`}
-            title="Buscar e instalar la última versión disponible desde GitHub"
-          >
-            <RefreshCw size={12} className={isUpdatingServer ? 'animate-spin' : ''} />
-            <span>{isUpdatingServer ? 'Buscando actualización...' : '⚡ Buscar actualización'}</span>
-          </button>
           {/* Selector de Modo de Vista (Ambos, Solo Biblia, Solo Escritura) */}
           <div className={`flex items-center p-0.5 rounded border text-xs font-semibold select-none ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6]'}`} title="Modo de pantalla y distribución de espacio">
             <button 
@@ -434,6 +425,7 @@ export default function App() {
           >
             {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
           </button>
+
           {activeSermon && (
             <button 
               onClick={() => setIsPreacherMode(true)}
@@ -443,6 +435,17 @@ export default function App() {
               <Play size={12} /> Modo Predicador
             </button>
           )}
+
+          {/* Botón Buscar Actualización a la DERECHA DEL TODO */}
+          <button 
+            onClick={handleUpdateProxmox}
+            disabled={isUpdatingServer}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm ${isUpdatingServer ? 'bg-blue-600/50 text-white cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500 text-white hover:scale-105 active:scale-95'}`}
+            title="Buscar e instalar la última versión disponible desde GitHub"
+          >
+            <RefreshCw size={12} className={isUpdatingServer ? 'animate-spin' : ''} />
+            <span>{isUpdatingServer ? 'Buscando actualización...' : '⚡ Buscar actualización'}</span>
+          </button>
         </div>
       </div>
 
