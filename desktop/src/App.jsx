@@ -377,12 +377,14 @@ export default function App() {
             <RefreshCw size={12} className={isUpdatingServer ? 'animate-spin' : ''} />
             <span>{isUpdatingServer ? 'Buscando actualización...' : '⚡ Buscar actualización'}</span>
           </button>
+          {/* Botón Explorador de Sermones (Claro, visible y con texto cuando está oculto) */}
           <button 
             onClick={() => setShowSermonPanel(!showSermonPanel)}
-            className={`p-1 rounded transition-colors ${showSermonPanel ? 'bg-blue-600/20 text-blue-600 dark:text-blue-400' : 'hover:bg-gray-500/20'}`}
-            title="Mostrar / Ocultar Explorador de Sermones y Apuntes"
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm cursor-pointer ${showSermonPanel ? (isDarkMode ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30' : 'bg-blue-100 text-blue-700 hover:bg-blue-200') : 'bg-amber-500 hover:bg-amber-400 text-white animate-pulse'}`}
+            title={showSermonPanel ? "Ocultar panel de sermones" : "Mostrar panel de sermones"}
           >
-            <PanelLeft size={15} />
+            <PanelLeft size={14} />
+            <span>{showSermonPanel ? 'Sermones' : '📁 Mostrar Sermones'}</span>
           </button>
           <button 
             onClick={() => setIsDarkMode(!isDarkMode)}
@@ -411,7 +413,21 @@ export default function App() {
       </div>
 
       {/* Main Workspace Layout */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
+
+        {/* Pestaña flotante lateral cuando el panel de sermones está oculto */}
+        {!showSermonPanel && (
+          <button 
+            onClick={() => setShowSermonPanel(true)}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-40 bg-blue-600 hover:bg-blue-500 text-white py-3 px-1 rounded-r-md shadow-xl flex flex-col items-center gap-2 cursor-pointer transition-all hover:pl-2"
+            title="Abrir panel de Sermones y Apuntes"
+          >
+            <PanelLeft size={16} />
+            <span className="text-[10px] font-bold uppercase tracking-widest [writing-mode:vertical-lr] rotate-180">
+              Sermones
+            </span>
+          </button>
+        )}
 
         {/* Primary Side Panel (Sermones y Apuntes) */}
         {showSermonPanel && (
