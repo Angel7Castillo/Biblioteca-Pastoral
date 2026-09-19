@@ -20,6 +20,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('explorer'); // 'explorer', 'bible', 'search'
   const [showSermonPanel, setShowSermonPanel] = useState(true);
   const [showBiblePanel, setShowBiblePanel] = useState(true);
+  const [showSermonEditor, setShowSermonEditor] = useState(true);
   const [isPreacherMode, setIsPreacherMode] = useState(false);
   const [isUpdatingServer, setIsUpdatingServer] = useState(false);
   const [serverNotice, setServerNotice] = useState(null);
@@ -391,19 +392,37 @@ export default function App() {
             <RefreshCw size={12} className={isUpdatingServer ? 'animate-spin' : ''} />
             <span>{isUpdatingServer ? 'Buscando actualización...' : '⚡ Buscar actualización'}</span>
           </button>
+          {/* Selector de Modo de Vista (Ambos, Solo Biblia, Solo Escritura) */}
+          <div className={`flex items-center p-0.5 rounded border text-xs font-semibold select-none ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6]'}`} title="Modo de pantalla y distribución de espacio">
+            <button 
+              onClick={() => { setShowBiblePanel(true); setShowSermonEditor(true); }}
+              className={`px-2 py-0.5 rounded transition-all cursor-pointer ${showBiblePanel && showSermonEditor ? 'bg-blue-600 text-white font-bold shadow-sm' : 'opacity-70 hover:opacity-100'}`}
+              title="Vista Dividida: Ver Biblia y Editor al mismo tiempo"
+            >
+              📑 Ambos
+            </button>
+            <button 
+              onClick={() => { setShowBiblePanel(true); setShowSermonEditor(false); }}
+              className={`px-2 py-0.5 rounded transition-all cursor-pointer ${showBiblePanel && !showSermonEditor ? 'bg-blue-600 text-white font-bold shadow-sm' : 'opacity-70 hover:opacity-100'}`}
+              title="Solo Lectura: Ver únicamente el Visor Bíblico en pantalla completa"
+            >
+              📖 Solo Biblia
+            </button>
+            <button 
+              onClick={() => { setShowBiblePanel(false); setShowSermonEditor(true); }}
+              className={`px-2 py-0.5 rounded transition-all cursor-pointer ${!showBiblePanel && showSermonEditor ? 'bg-blue-600 text-white font-bold shadow-sm' : 'opacity-70 hover:opacity-100'}`}
+              title="Solo Escritura: Ver únicamente el Editor de Sermones en pantalla completa"
+            >
+              ✍️ Solo Editor
+            </button>
+          </div>
+
           <button 
             onClick={() => setIsDarkMode(!isDarkMode)}
             className={`p-1 rounded transition-colors ${isDarkMode ? 'text-amber-400 hover:bg-amber-400/10' : 'text-indigo-600 hover:bg-indigo-600/10'}`}
             title={isDarkMode ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
           >
             {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
-          <button 
-            onClick={() => setShowBiblePanel(!showBiblePanel)}
-            className={`p-1 rounded transition-colors ${showBiblePanel ? 'bg-blue-600/20 text-blue-600 dark:text-blue-400' : 'hover:bg-gray-500/20'}`}
-            title="Mostrar / Ocultar Visor Bíblico"
-          >
-            <LayoutPanelTop size={15} />
           </button>
           {activeSermon && (
             <button 
@@ -522,7 +541,7 @@ export default function App() {
           {/* Split 1: Visor Bíblico Multiversión (Top Split) */}
           {showBiblePanel && (
             <div 
-              style={{ height: biblePanelHeight }}
+              style={{ height: showSermonEditor ? biblePanelHeight : '100%' }}
               className={`border-b flex flex-col relative transition-all duration-150 ${isDarkMode ? 'bg-[#0F111A] border-[#2A2E3E]' : 'bg-[#F8F6F0] border-[#D5D1C6]'}`}
             >
               {/* Header Navegador Bíblico Directo e Intuitivo */}
@@ -764,136 +783,153 @@ export default function App() {
           )}
 
           {/* Split 2: Editor de Sermones (Bottom Split) */}
-          <div className="flex-1 flex flex-col relative overflow-hidden">
-            {activeSermon ? (
-              <>
-                {/* Sermon Header / Metadata Bar */}
-                <div className={`p-3 px-4 border-b flex flex-col gap-2.5 ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-[#EFECE6] border-[#D5D1C6]'}`}>
-                  
-                  {/* Campo Fijo 1: Título del Sermón */}
-                  <div className="flex items-center gap-2">
-                    <label className="font-bold text-xs uppercase text-blue-500 dark:text-blue-400 min-w-[60px]">Título:</label>
-                    <input 
-                      type="text"
-                      value={sermonTitle}
-                      onChange={(e) => setSermonTitle(e.target.value)}
-                      className={`bg-transparent text-base font-bold focus:outline-none border-b border-gray-500/30 focus:border-blue-500 w-full px-1 py-0.5 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
-                      placeholder="Escribe el título del sermón o apunte..."
+          {showSermonEditor && (
+            <div className="flex-1 flex flex-col relative overflow-hidden">
+              {activeSermon ? (
+                <>
+                  {/* Sermon Header / Metadata Bar */}
+                  <div className={`p-3 px-4 border-b flex flex-col gap-2.5 ${isDarkMode ? 'bg-[#151720] border-[#2A2E3E]' : 'bg-[#EFECE6] border-[#D5D1C6]'}`}>
+                    
+                    {/* Campo Fijo 1: Título del Sermón */}
+                    <div className="flex items-center gap-2">
+                      <label className="font-bold text-xs uppercase text-blue-500 dark:text-blue-400 min-w-[60px]">Título:</label>
+                      <input 
+                        type="text"
+                        value={sermonTitle}
+                        onChange={(e) => setSermonTitle(e.target.value)}
+                        className={`bg-transparent text-base font-bold focus:outline-none border-b border-gray-500/30 focus:border-blue-500 w-full px-1 py-0.5 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
+                        placeholder="Escribe el título del sermón o apunte..."
+                      />
+                    </div>
+
+                    {/* Campos Fijos 2, 3 y 4: Verso Principal, Tema / Serie, Estado y Reutilizar */}
+                    <div className="flex flex-wrap items-center gap-3 text-xs">
+                      
+                      {/* Campo Fijo 2: Verso Principal */}
+                      <div className="flex items-center gap-1.5 flex-1 min-w-[170px]">
+                        <label className="font-bold text-[10px] uppercase opacity-80 min-w-[85px] text-blue-400 dark:text-blue-300">Verso Principal:</label>
+                        <input 
+                          type="text"
+                          value={sermonPassage}
+                          onChange={(e) => setSermonPassage(e.target.value)}
+                          placeholder="Ej: Juan 3:16"
+                          className={`border rounded px-2 py-1 focus:outline-none w-full text-xs font-semibold ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
+                        />
+                      </div>
+
+                      {/* Campo Fijo 3: Tema / Serie */}
+                      <div className="flex items-center gap-1.5 flex-1 min-w-[170px]">
+                        <label className="font-bold text-[10px] uppercase opacity-80 min-w-[70px] text-emerald-400 dark:text-emerald-300">Tema / Serie:</label>
+                        <input 
+                          type="text"
+                          value={sermonLocation}
+                          onChange={(e) => setSermonLocation(e.target.value)}
+                          placeholder="Ej: Familia, Fe, Gracia..."
+                          className={`border rounded px-2 py-1 focus:outline-none w-full text-xs font-semibold ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
+                        />
+                      </div>
+
+                      {/* Estado del Sermón */}
+                      <div className="flex items-center gap-1.5">
+                        <label className="font-bold text-[10px] uppercase opacity-80">Estado:</label>
+                        <select 
+                          value={sermonStatus}
+                          onChange={(e) => setSermonStatus(e.target.value)}
+                          className={`border rounded px-2 py-1 focus:outline-none text-xs font-semibold ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
+                        >
+                          <option value="borrador">Borrador</option>
+                          <option value="listo">Listo para Predicar</option>
+                          <option value="predicado">Predicado</option>
+                        </select>
+                      </div>
+
+                      {/* Control A- / A+ Letra Escritura */}
+                      <div className={`flex items-center gap-0.5 border rounded px-1 py-0.5 ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6]'}`} title={`Tamaño de letra del editor: ${editorFontSize}px`}>
+                        <button 
+                          type="button"
+                          onClick={() => setEditorFontSize(prev => Math.max(12, prev - 2))}
+                          className={`px-1.5 py-0.5 rounded font-bold text-xs cursor-pointer select-none transition-colors ${isDarkMode ? 'hover:bg-blue-600/30 text-gray-200' : 'hover:bg-blue-100 text-gray-800'}`}
+                          title="Reducir letra del editor (A-)"
+                        >A-</button>
+                        <button 
+                          type="button"
+                          onClick={() => setEditorFontSize(prev => Math.min(36, prev + 2))}
+                          className={`px-1.5 py-0.5 rounded font-bold text-xs cursor-pointer select-none transition-colors ${isDarkMode ? 'hover:bg-blue-600/30 text-gray-200' : 'hover:bg-blue-100 text-gray-800'}`}
+                          title="Aumentar letra del editor (A+)"
+                        >A+</button>
+                      </div>
+
+                      {/* Reutilizar */}
+                      <button 
+                        onClick={handleDuplicateSermon}
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded transition-colors text-xs font-semibold border ${isDarkMode ? 'bg-gray-800 border-gray-700 text-white hover:bg-gray-700' : 'bg-white border-[#D5D1C6] text-gray-900 hover:bg-gray-100'}`}
+                        title="Reutilizar / Duplicar Sermón"
+                      >
+                        <Copy size={12} /> Reutilizar
+                      </button>
+
+                      {/* Botón Guardar (Manual & Funcional) */}
+                      <button 
+                        onClick={handleManualSave}
+                        className="flex items-center gap-1.5 px-3 py-1 rounded transition-all text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-sm hover:scale-105 active:scale-95 cursor-pointer"
+                        title="Guardar sermón ahora"
+                      >
+                        <Save size={13} />
+                        <span>Guardar</span>
+                      </button>
+
+                      {/* Botón Imprimir en A4 / PDF */}
+                      <button 
+                        onClick={handlePrintSermon}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded transition-all text-xs font-bold border cursor-pointer ${isDarkMode ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-400 hover:bg-emerald-600 hover:text-white' : 'bg-emerald-50 border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white'}`}
+                        title="Imprimir sermón en formato A4 / Guardar como PDF"
+                      >
+                        <Printer size={13} />
+                        <span>Imprimir A4</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Editor Content Canvas */}
+                  <div 
+                    className="flex-1 flex flex-col overflow-hidden"
+                    style={{
+                      '--editor-font-size': `${editorFontSize}px`,
+                      '--editor-line-height': 1.6
+                    }}
+                  >
+                    <ReactQuill 
+                      theme="snow"
+                      value={sermonHtml}
+                      onChange={setSermonHtml}
+                      modules={quillModules}
+                      placeholder="Redacta los puntos principales de tu sermón aquí..."
+                      className="flex-1 flex flex-col h-full"
                     />
                   </div>
-
-                  {/* Campos Fijos 2, 3 y 4: Verso Principal, Tema / Serie, Estado y Reutilizar */}
-                  <div className="flex flex-wrap items-center gap-3 text-xs">
-                    
-                    {/* Campo Fijo 2: Verso Principal */}
-                    <div className="flex items-center gap-1.5 flex-1 min-w-[170px]">
-                      <label className="font-bold text-[10px] uppercase opacity-80 min-w-[85px] text-blue-400 dark:text-blue-300">Verso Principal:</label>
-                      <input 
-                        type="text"
-                        value={sermonPassage}
-                        onChange={(e) => setSermonPassage(e.target.value)}
-                        placeholder="Ej: Juan 3:16"
-                        className={`border rounded px-2 py-1 focus:outline-none w-full text-xs font-semibold ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
-                      />
-                    </div>
-
-                    {/* Campo Fijo 3: Tema / Serie */}
-                    <div className="flex items-center gap-1.5 flex-1 min-w-[170px]">
-                      <label className="font-bold text-[10px] uppercase opacity-80 min-w-[70px] text-emerald-400 dark:text-emerald-300">Tema / Serie:</label>
-                      <input 
-                        type="text"
-                        value={sermonLocation}
-                        onChange={(e) => setSermonLocation(e.target.value)}
-                        placeholder="Ej: Familia, Fe, Gracia..."
-                        className={`border rounded px-2 py-1 focus:outline-none w-full text-xs font-semibold ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
-                      />
-                    </div>
-
-                    {/* Estado del Sermón */}
-                    <div className="flex items-center gap-1.5">
-                      <label className="font-bold text-[10px] uppercase opacity-80">Estado:</label>
-                      <select 
-                        value={sermonStatus}
-                        onChange={(e) => setSermonStatus(e.target.value)}
-                        className={`border rounded px-2 py-1 focus:outline-none text-xs font-semibold ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
-                      >
-                        <option value="borrador">Borrador</option>
-                        <option value="listo">Listo para Predicar</option>
-                        <option value="predicado">Predicado</option>
-                      </select>
-                    </div>
-
-                    {/* Control A- / A+ Letra Escritura */}
-                    <div className={`flex items-center gap-0.5 border rounded px-1 py-0.5 ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E]' : 'bg-white border-[#D5D1C6]'}`} title={`Tamaño de letra del editor: ${editorFontSize}px`}>
-                      <button 
-                        type="button"
-                        onClick={() => setEditorFontSize(prev => Math.max(12, prev - 2))}
-                        className={`px-1.5 py-0.5 rounded font-bold text-xs cursor-pointer select-none transition-colors ${isDarkMode ? 'hover:bg-blue-600/30 text-gray-200' : 'hover:bg-blue-100 text-gray-800'}`}
-                        title="Reducir letra del editor (A-)"
-                      >A-</button>
-                      <button 
-                        type="button"
-                        onClick={() => setEditorFontSize(prev => Math.min(36, prev + 2))}
-                        className={`px-1.5 py-0.5 rounded font-bold text-xs cursor-pointer select-none transition-colors ${isDarkMode ? 'hover:bg-blue-600/30 text-gray-200' : 'hover:bg-blue-100 text-gray-800'}`}
-                        title="Aumentar letra del editor (A+)"
-                      >A+</button>
-                    </div>
-
-                    {/* Reutilizar */}
-                    <button 
-                      onClick={handleDuplicateSermon}
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded transition-colors text-xs font-semibold border ${isDarkMode ? 'bg-gray-800 border-gray-700 text-white hover:bg-gray-700' : 'bg-white border-[#D5D1C6] text-gray-900 hover:bg-gray-100'}`}
-                      title="Reutilizar / Duplicar Sermón"
-                    >
-                      <Copy size={12} /> Reutilizar
-                    </button>
-
-                    {/* Botón Guardar (Manual & Funcional) */}
-                    <button 
-                      onClick={handleManualSave}
-                      className="flex items-center gap-1.5 px-3 py-1 rounded transition-all text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-sm hover:scale-105 active:scale-95 cursor-pointer"
-                      title="Guardar sermón ahora"
-                    >
-                      <Save size={13} />
-                      <span>Guardar</span>
-                    </button>
-
-                    {/* Botón Imprimir en A4 / PDF */}
-                    <button 
-                      onClick={handlePrintSermon}
-                      className={`flex items-center gap-1.5 px-3 py-1 rounded transition-all text-xs font-bold border cursor-pointer ${isDarkMode ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-400 hover:bg-emerald-600 hover:text-white' : 'bg-emerald-50 border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white'}`}
-                      title="Imprimir sermón en formato A4 / Guardar como PDF"
-                    >
-                      <Printer size={13} />
-                      <span>Imprimir A4</span>
-                    </button>
-                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center opacity-50 italic text-sm">
+                  Selecciona o crea un sermón en el explorador para comenzar.
                 </div>
+              )}
+            </div>
+          )}
 
-                {/* Editor Content Canvas */}
-                <div 
-                  className="flex-1 flex flex-col overflow-hidden"
-                  style={{
-                    '--editor-font-size': `${editorFontSize}px`,
-                    '--editor-line-height': 1.6
-                  }}
-                >
-                  <ReactQuill 
-                    theme="snow"
-                    value={sermonHtml}
-                    onChange={setSermonHtml}
-                    modules={quillModules}
-                    placeholder="Redacta los puntos principales de tu sermón aquí..."
-                    className="flex-1 flex flex-col h-full"
-                  />
-                </div>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center opacity-50 italic text-sm">
-                Selecciona o crea un sermón en el explorador para comenzar.
-              </div>
-            )}
-          </div>
+          {/* Estado de Pantalla Vacía (Si se ocultan ambos paneles) */}
+          {!showBiblePanel && !showSermonEditor && (
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center select-none opacity-60">
+              <BookOpen size={40} className="mb-2 text-blue-500" />
+              <p className="font-bold text-base">Modo de pantalla vacía</p>
+              <p className="text-xs max-w-sm mt-1">Selecciona <strong>"📑 Ambos"</strong>, <strong>"📖 Solo Biblia"</strong> o <strong>"✍️ Solo Editor"</strong> en la barra superior para continuar.</p>
+              <button 
+                onClick={() => { setShowBiblePanel(true); setShowSermonEditor(true); }}
+                className="mt-4 bg-blue-600 text-white px-3.5 py-1.5 rounded text-xs font-bold shadow-md hover:bg-blue-500 cursor-pointer transition-all"
+              >
+                📑 Mostrar Vista Dividida
+              </button>
+            </div>
+          )}
 
         </div>
 
