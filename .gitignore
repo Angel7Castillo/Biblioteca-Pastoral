@@ -24,6 +24,9 @@ backend/storage/logs/*
 backend/database/*.sqlite
 backend/database/*.sqlite-journal
 
+# Confidential Credentials (DO NOT PUSH)
+docs/Credenciales.md
+
 # IDE and OS files
 .DS_Store
 Thumbs.db
