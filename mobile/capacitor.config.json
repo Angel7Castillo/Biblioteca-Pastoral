@@ -1,0 +1,8 @@
+{
+  "appId": "com.bibliotecapastoral.app",
+  "appName": "Biblioteca Pastoral",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
