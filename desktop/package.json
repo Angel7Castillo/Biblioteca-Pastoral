@@ -17,8 +17,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "tu-usuario",
-        "repo": "biblioteca-pastoral"
+        "owner": "Angel7Castillo",
+        "repo": "Biblioteca-Pastoral"
       }
     ],
     "directories": {
@@ -29,9 +29,18 @@
       "electron/**/*",
       "server/**/*"
     ],
-    "extraResources": [
-      "mock.bblx"
-    ]
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   },
   "dependencies": {
     "cors": "^2.8.6",

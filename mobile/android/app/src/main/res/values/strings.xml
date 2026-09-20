@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Biblioteca Pastoral</string>
+    <string name="title_activity_main">Biblioteca Pastoral</string>
+    <string name="package_name">com.bibliotecapastoral.app</string>
+    <string name="custom_url_scheme">com.bibliotecapastoral.app</string>
+</resources>
