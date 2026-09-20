@@ -29,7 +29,8 @@ class SystemController extends Controller
             'success' => true,
             'message' => 'Sistema actualizado con éxito.',
             'version' => '2.0',
-            'commit' => 'v2.0'
+            'commit' => trim($commitInfo),
+            'debug_output' => $output
         ]);
     }
 
