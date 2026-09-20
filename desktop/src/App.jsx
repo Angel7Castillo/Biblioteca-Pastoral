@@ -765,8 +765,8 @@ export default function App() {
                           )}
 
                           <div className="flex flex-wrap items-center gap-1.5 text-[10px] opacity-90">
-                            <span className={`px-1.5 py-0.5 rounded font-bold uppercase ${s.status === 'borrador' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : s.status === 'listo' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-green-500/20 text-green-600 dark:text-green-400'}`}>
-                              {s.status}
+                            <span className={`px-1.5 py-0.5 rounded font-bold uppercase ${s.status === 'idea' ? 'bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/30' : s.status === 'borrador' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : s.status === 'listo' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-green-500/20 text-green-600 dark:text-green-400'}`}>
+                              {s.status === 'idea' ? '💡 Idea' : s.status}
                             </span>
                             {s.main_passage && <span className="font-semibold text-blue-600 dark:text-blue-400 truncate max-w-[100px]">📖 {s.main_passage}</span>}
                             {s.location && <span className="font-semibold text-emerald-600 dark:text-emerald-400 truncate max-w-[90px] bg-emerald-500/10 px-1 rounded">🏷️ {s.location}</span>}
@@ -1292,9 +1292,10 @@ export default function App() {
                           onChange={(e) => setSermonStatus(e.target.value)}
                           className={`border rounded px-2 py-1 focus:outline-none text-xs font-semibold ${isDarkMode ? 'bg-[#1A1D27] border-[#2A2E3E] text-white' : 'bg-white border-[#D5D1C6] text-gray-900'}`}
                         >
-                          <option value="borrador">Borrador</option>
-                          <option value="listo">Listo para Predicar</option>
-                          <option value="predicado">Predicado</option>
+                          <option value="idea">💡 Idea de Sermón</option>
+                          <option value="borrador">📝 Borrador</option>
+                          <option value="listo">✅ Listo para Predicar</option>
+                          <option value="predicado">🎤 Predicado</option>
                         </select>
                       </div>
 
