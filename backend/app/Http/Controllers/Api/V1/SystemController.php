@@ -51,12 +51,20 @@ class SystemController extends Controller
     public function status(Request $request)
     {
         $baseDir = base_path('..');
-        $commitInfo = shell_exec("export HOME=/tmp; git -C {$baseDir} log -1 --pretty=format:\"%h - %s (%cr)\" 2>&1");
+        $backendDir = base_path();
+        
+        $gitLogParent = shell_exec("export HOME=/tmp; git -C {$baseDir} log -1 --oneline 2>&1");
+        $gitLogBackend = shell_exec("export HOME=/tmp; git -C {$backendDir} log -1 --oneline 2>&1");
+        $gitLogCurrent = shell_exec("export HOME=/tmp; git log -1 --oneline 2>&1");
 
         return response()->json([
             'success' => true,
             'version' => '2.0',
-            'commit' => trim($commitInfo) ?: 'v2.0',
+            'backend_dir' => $backendDir,
+            'base_dir' => $baseDir,
+            'git_parent' => trim($gitLogParent),
+            'git_backend' => trim($gitLogBackend),
+            'git_current' => trim($gitLogCurrent),
         ]);
     }
 }
