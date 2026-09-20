@@ -3,6 +3,7 @@ const API_BASE_URL = 'http://192.168.1.200/api/v1';
 async function fetchWithTimeout(url, options = {}, timeout = 4000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
+  const vaultId = localStorage.getItem('pastor_vault_id') || '';
   try {
     const response = await fetch(url, {
       ...options,
@@ -10,6 +11,7 @@ async function fetchWithTimeout(url, options = {}, timeout = 4000) {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'X-Vault-Id': vaultId,
         ...(options.headers || {})
       }
     });
@@ -408,6 +410,65 @@ export async function searchTheologicalDictionary(query = '') {
   }
   return { data: filtered, isOffline: true };
 }
+
+// ----------------------------------------------------
+// API VINCULACIÓN DE DISPOSITIVOS (PC ↔ MÓVIL)
+// ----------------------------------------------------
+export async function generatePairCode() {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/sincronizacion/generar-codigo`, {
+      method: 'POST',
+      body: JSON.stringify({ vault_id: localStorage.getItem('pastor_vault_id') || '' })
+    });
+    const data = await res.json();
+    if (data.success && data.vault_id) {
+      localStorage.setItem('pastor_vault_id', data.vault_id);
+    }
+    return data;
+  } catch (err) {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const vaultId = localStorage.getItem('pastor_vault_id') || ('VAULT-LOCAL-' + Date.now());
+    localStorage.setItem('pastor_vault_id', vaultId);
+    return {
+      success: true,
+      code,
+      formatted_code: code.slice(0, 3) + ' ' + code.slice(3),
+      vault_id: vaultId,
+      expires_in_seconds: 600,
+      isOffline: true
+    };
+  }
+}
+
+export async function linkDeviceWithCode(code) {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/sincronizacion/vincular`, {
+      method: 'POST',
+      body: JSON.stringify({ code })
+    });
+    const data = await res.json();
+    if (data.success && data.vault_id) {
+      localStorage.setItem('pastor_vault_id', data.vault_id);
+    }
+    return data;
+  } catch (err) {
+    return {
+      success: false,
+      message: 'No se pudo conectar con el servidor para la vinculación. Revisa tu conexión Wi-Fi.'
+    };
+  }
+}
+
+export async function checkPairCodeStatus(code) {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/sincronizacion/estado?code=${encodeURIComponent(code)}`);
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    return { success: false, is_linked: false };
+  }
+}
+
 
 
 

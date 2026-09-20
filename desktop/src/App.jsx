@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Book, Edit3, Search, Sun, Moon, LayoutPanelTop, PanelLeft,
-  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save, Type, MoveVertical, Printer, StickyNote, MessageSquare, HelpCircle, BookMarked, Tag, Hash, Layers, Filter, X
+  Plus, Copy, Trash2, Play, BookOpen, RefreshCw, CheckCircle2, AlertCircle, Save, Type, MoveVertical, Printer, StickyNote, MessageSquare, HelpCircle, BookMarked, Tag, Hash, Layers, Filter, X, Smartphone, QrCode
 } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -18,6 +18,7 @@ import PreacherMode from './components/PreacherMode';
 import StatusBar from './components/StatusBar';
 import InfoModal from './components/InfoModal';
 import { DictionaryModal } from './components/DictionaryModal';
+import { SyncModal } from './components/SyncModal';
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -28,6 +29,7 @@ export default function App() {
   const [isPreacherMode, setIsPreacherMode] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [showDictionaryModal, setShowDictionaryModal] = useState(false);
+  const [showSyncModal, setShowSyncModal] = useState(false);
   const [isUpdatingServer, setIsUpdatingServer] = useState(false);
   const [serverNotice, setServerNotice] = useState(null);
   const [serverCommit, setServerCommit] = useState('');
@@ -551,6 +553,15 @@ export default function App() {
           title="Abrir Diccionario Teológico y Concordancia Strong (Hebreo & Griego)"
         >
           <BookMarked size={14} /> 📚 Diccionario
+        </button>
+
+        {/* 5. Botón Vincular Móvil (PC ↔ Celular) */}
+        <button 
+          onClick={() => setShowSyncModal(true)}
+          className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1 rounded text-xs font-bold transition-all shadow-sm cursor-pointer whitespace-nowrap"
+          title="Vincular PC con teléfono móvil mediante código de 6 dígitos o QR"
+        >
+          <Smartphone size={14} /> 🔗 Vincular Móvil
         </button>
 
         {/* Botón Buscar Actualización */}
@@ -1464,6 +1475,12 @@ export default function App() {
         onInsertDefinition={(insertedText) => {
           setSermonHtml(prev => prev + `<blockquote class="border-l-4 border-amber-500 pl-3 my-2 italic font-serif text-xs">${insertedText.replace(/\n/g, '<br/>')}</blockquote><p></p>`);
         }}
+      />
+
+      {/* Vincular Dispositivos Modal (PC ↔ Móvil) */}
+      <SyncModal 
+        isOpen={showSyncModal}
+        onClose={() => setShowSyncModal(false)}
       />
 
       {/* Contenedor Exclusivo de Impresión A4 */}

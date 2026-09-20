@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\SermonController;
 use App\Http\Controllers\Api\V1\BibleController;
 use App\Http\Controllers\Api\V1\BibleNoteController;
 use App\Http\Controllers\Api\V1\DictionaryController;
+use App\Http\Controllers\Api\V1\SyncController;
 use App\Http\Controllers\Api\V1\SystemController;
 
 Route::prefix('v1')->group(function () {
@@ -34,6 +35,11 @@ Route::prefix('v1')->group(function () {
     Route::get('/diccionario/strong/buscar', [DictionaryController::class, 'searchStrong']);
     Route::get('/diccionario/strong/{code}', [DictionaryController::class, 'showStrong']);
     Route::get('/diccionario/teologico', [DictionaryController::class, 'searchTheological']);
+
+    // API de Vinculación de Dispositivos (PC ↔ Móvil)
+    Route::post('/sincronizacion/generar-codigo', [SyncController::class, 'generateCode']);
+    Route::post('/sincronizacion/vincular', [SyncController::class, 'linkDevice']);
+    Route::get('/sincronizacion/estado', [SyncController::class, 'getStatus']);
 
     // Mantenimiento y Auto-Despliegue del Servidor Proxmox
     Route::get('/sistema/estado', [SystemController::class, 'status']);
