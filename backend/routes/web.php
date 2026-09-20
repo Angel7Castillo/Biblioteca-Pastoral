@@ -10,5 +10,3 @@ Route::get('/', function () {
     ]);
 });
 
-// Incluir rutas de API para compatibilidad completa
-require __DIR__.'/api.php';
